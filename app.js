@@ -55,10 +55,4 @@ for(var i = 0; i < 364; i++) {	// FROM PAGE 0 TO PAGE 364
 
 }
 
-
-
-// app.get('/', function(req, res){
-//   res.render('index.html.twig', {titre: "Wrapper"});
-// });
-
 app.listen(8080);
