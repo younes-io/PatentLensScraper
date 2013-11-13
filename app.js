@@ -35,7 +35,7 @@ for(var i = 0; i < 364; i++) {	// FROM PAGE 0 TO PAGE 364
 	 		var urlF = "http://www.patentlens.net/patentlens/" + $(this).attr('href');
 			var url_parts = url.parse(urlF, true).query;
 			var patnum = url_parts.patnums;
-			var urlNew = "http://www.patentlens.net/patentlens/fulltext.html?patnum=" + patnum + "&language=en&query=RFID&stemming=true&pid=p0";
+			var urlNew = "http://www.patentlens.net/patentlens/fulltext.html?patnum=" + patnum + "&language=en&query=" + keyword + "&stemming=true&pid=p0";
 			
 			request(urlNew, function(err, resp, body) {
 				// We load the DOM tree of the patent page into the variable $$
