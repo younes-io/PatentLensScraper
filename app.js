@@ -18,7 +18,7 @@ var keyword = "RFID";
 
 var j = 0;
 
-for(var i = 0; i < 364; i++) {	// Résultats jusqu'à la page 364
+for(var i = 0; i < 1; i++) {	// Résultats jusqu'à la page 364
 	// URL de la page des résultats
 	var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=100&sortBy=publication_date&reverse=true&pageNumber="+i;
 	
@@ -41,7 +41,7 @@ for(var i = 0; i < 364; i++) {	// Résultats jusqu'à la page 364
 				// On charge l'arbre DOM de la page du brevet dans la variable $$
 				$$ = cheerio.load(body);
 
-				var pathFile = '/media/occulti/Millenium/Etudes/ExpressJS/Wrapper/scrapper_results/Patents_Files/result_'+ j +'.html';
+				var pathFile = __dirname + '/results/result_'+ j +'.html';
 				var $dataRetrieved = $$('#contents');
 				// Le contenu HTML de la page du brevet est stocké dans la varible jQuery $dataRetrieved puis
 				// écrit dans le fichier pathFile
@@ -58,8 +58,8 @@ for(var i = 0; i < 364; i++) {	// Résultats jusqu'à la page 364
 
 
 
-app.get('/', function(req, res){
-  res.render('index.html.twig', {titre: "Wrapper"});
-});
+// app.get('/', function(req, res){
+//   res.render('index.html.twig', {titre: "Wrapper"});
+// });
 
 app.listen(8080);
