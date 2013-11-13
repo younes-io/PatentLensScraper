@@ -26,7 +26,6 @@ for(var i = 0; i < 364; i++) {	// FROM PAGE 0 TO PAGE 364
 	request(urlString, function(err, resp, body) {
 	    if (err) throw err;
 
-	    // On charge l'arbre DOM de la page de recherche dans la variable $
 	    // We load the DOM tree of the results page into the variable $
 	    $ = cheerio.load(body);
 		
