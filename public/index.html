@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+	<!-- META -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+	<title>Sherlock - Scraper App</title>
+	
+
+	<!-- SCROLLS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+	<style>
+		html 					{ overflow-y:scroll; }
+		body 					{ padding-top:50px; }
+	</style>
+	<!-- SPELLS -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+	<script src="//localhost:8080/socket.io/socket.io.js"></script> 
+	<script src="core.js"></script>
+	
+
+</head>
+<!-- SET THE CONTROLLER AND GET ALL ENTRIES WITH INITIALIZE FUNCTION -->
+<body ng-controller="mainController" ng-init="initialize()">
+	<div class="container">
+
+		<!-- HEADER AND ENTRIES COUNT -->
+		<div class="jumbotron text-center">
+			<h1>Scraper Search</h1>
+			<h4>Made by Y. Sherlock</h4>
+		</div>
+
+		<!-- FORM TO SEARCH ENTRIES -->
+		<div id="search-form" class="row">
+			<div class="col-sm-8 col-sm-offset-2 text-center">
+				<form>
+					<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.search IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="Search" ng-model="formData.search">
+					</div>
+
+					<!-- search() WILL SEARCH ENTRIES -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="search()">Search</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- SEARCH BOX -->
+		<div id="results" class="row">
+			<div class="col-sm-4 col-sm-offset-4">
+			<div>{{ number }}</div>
+				<!-- LOOP OVER THE ENTRIES IN $scope.entries -->
+				<!--
+				<div class="checkbox" ng-repeat="entry in entries">
+					<ul>
+						<li>{{ entry.senses[0].definition }}</li>
+					</ul>
+				</div>
+				-->
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
