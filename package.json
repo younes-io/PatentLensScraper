@@ -1,15 +1,16 @@
 {
   "name": "Wrapper",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
     "express": "~3.4.4",
-    "twig": "*",
     "cheerio": "*",
-    "request": "*"
+    "request": "*",
+    "socket.io-client": "*",
+    "socket.io": "*"
   },
   "author": "Younes Sherlock <younesagma@gmail.com>",
   "description": "Wrapper App"
