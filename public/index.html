@@ -26,23 +26,20 @@
 <body ng-controller="mainController" ng-init="initialize()">
 	<div class="container">
 
-		<!-- HEADER AND ENTRIES COUNT -->
+
 		<div class="jumbotron text-center">
 			<h1>Scraper Search</h1>
 			<h4>Made by Y. Sherlock</h4>
 		</div>
 
-		<!-- FORM TO SEARCH ENTRIES -->
 		<div id="search-form" class="row">
 			<div class="col-sm-8 col-sm-offset-2 text-center">
 				<form>
 					<div class="form-group">
 
-						<!-- BIND THIS VALUE TO formData.search IN ANGULAR -->
 						<input type="text" class="form-control input-lg text-center" placeholder="Search" ng-model="formData.search">
 					</div>
 
-					<!-- search() WILL SEARCH ENTRIES -->
 					<button type="submit" class="btn btn-primary btn-lg" ng-click="search()">Search</button>
 				</form>
 			</div>
@@ -52,14 +49,6 @@
 		<div id="results" class="row">
 			<div class="col-sm-4 col-sm-offset-4">
 			<div>{{ number }}</div>
-				<!-- LOOP OVER THE ENTRIES IN $scope.entries -->
-				<!--
-				<div class="checkbox" ng-repeat="entry in entries">
-					<ul>
-						<li>{{ entry.senses[0].definition }}</li>
-					</ul>
-				</div>
-				-->
 			</div>
 		</div>
 	</div>
