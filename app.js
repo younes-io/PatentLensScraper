@@ -77,13 +77,6 @@ app.post('/search', function(req, res){
 	res.json(null);
 });
 
-// Send to all clients the number of generated files in the server
-// var intervalId = setInterval(function(){
-// 	if(numberFiles < 15){
-// 		io.sockets.emit('number', {numberOfFiles: numberFiles});
-// 	}
-// }, 1000);
-
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
 });
