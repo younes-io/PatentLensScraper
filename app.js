@@ -13,8 +13,6 @@ var fs = require('fs');
 
 var app = express();
 
-
-
 // all environments
 
 app.configure(function() {
@@ -42,7 +40,7 @@ app.post('/search', function(req, res){
 
 	var keyword	= req.body.search;	//var keyword = "RFID";	// The search keyword
 	
-	for(var i = 0; i < 2; i++) {	// FROM PAGE 0 TO PAGE 364
+	for(var i = 0; i < 1; i++) {	// FROM PAGE 0 TO PAGE 364
 		// The results' page URL
 		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=100&sortBy=publication_date&reverse=true&pageNumber="+i;
 		
@@ -75,16 +73,14 @@ app.post('/search', function(req, res){
 				});
 		 	});
 		});
+		
 	}
 });
 
-io.sockets.on('connection', function (socket) {
-	socket.on('next', function (data) {
-		socket.emit('number', {
-			numberOfFiles: numberFiles
-		});
-	});
-});
+// Send to all clients the number of generated files in the server
+var intervalId = setInterval(function(){
+	io.sockets.emit('number', {numberOfFiles: numberFiles});
+}, 1000);
 
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
