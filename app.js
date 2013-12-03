@@ -27,7 +27,9 @@ var io = require('socket.io').listen(server);
 
 server.listen(8080);
 
-var numberFiles = 1;
+var numberFiles = 0;
+
+//io.sockets.emit('number', {numberOfFiles: numberFiles});
 
 app.post('/search', function(req, res){
 
@@ -54,7 +56,7 @@ app.post('/search', function(req, res){
 				request(urlNew, function(err, resp, body) {
 					// We load the DOM tree of the patent page into the variable $$
 					$$ = cheerio.load(body);
-
+					numberFiles++;
 					var pathFile = __dirname + '/results/result_'+ numberFiles +'.html';
 					var $dataRetrieved = $$('#contents');
 					// The HTML content of the patent page is put into $dataRetrieved then written in the file pathFile/
@@ -62,18 +64,25 @@ app.post('/search', function(req, res){
 						if (err) throw err;
 						console.log("File saved in " + pathFile);
 					});
-					numberFiles++;
+					if (numberFiles < 10){
+						checkSearch = true;
+					} else {
+						checkSearch = false;
+					}
+					io.sockets.emit('number', {numberOfFiles: numberFiles, check: checkSearch});
 				});
 		 	});
 		});
-		
 	}
+	res.json(null);
 });
 
 // Send to all clients the number of generated files in the server
-var intervalId = setInterval(function(){
-	io.sockets.emit('number', {numberOfFiles: numberFiles});
-}, 1000);
+// var intervalId = setInterval(function(){
+// 	if(numberFiles < 15){
+// 		io.sockets.emit('number', {numberOfFiles: numberFiles});
+// 	}
+// }, 1000);
 
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
