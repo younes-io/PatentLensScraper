@@ -40,7 +40,7 @@
 						<input type="text" class="form-control input-lg text-center" placeholder="Search" ng-model="formData.search">
 					</div>
 
-					<button type="submit" class="btn btn-primary btn-lg" ng-click="search()">Search</button>
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="search()" ng-disabled="check">Search</button>
 				</form>
 			</div>
 		</div>
@@ -48,7 +48,7 @@
 		<!-- SEARCH BOX -->
 		<div id="results" class="row">
 			<div class="col-sm-4 col-sm-offset-4">
-			<div>{{ number }}</div>
+				Number of files <span class="label label-info">{{ number }}</span>
 			</div>
 		</div>
 	</div>
