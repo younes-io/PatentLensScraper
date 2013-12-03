@@ -1,7 +1,3 @@
-/**
- * Module dependencies.
- */
-
 var express = require('express');
 var request	= require('request');
 var http 	= require('http');
@@ -24,9 +20,6 @@ app.configure(function() {
 	app.use(express.urlencoded());
 	app.use(app.router);
 });
-
-// app.listen(8080);
-// console.log("App listening on port 8080");
 
 
 var server = http.createServer(app);
