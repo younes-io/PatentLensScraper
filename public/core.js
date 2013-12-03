@@ -30,19 +30,19 @@ app.factory('socket', function($rootScope){
 function mainController($scope, $http, socket) {
 	$scope.formData = {};
 
-
-
 	$scope.initialize = function() {
 		$scope.formData.search = "";
 		$scope.check = false;
-		socket.on('number', function (data) {
-			$scope.number = data.numberOfFiles;
-		});
 		
 		console.log("initialize() body !");
 	};
 
 	$scope.search = function() {
+		
+		socket.on('number', function (data) {
+			$scope.number = data.numberOfFiles;
+			$scope.check = data.check;
+		});
 
 		console.log("search() body !");
 		$scope.check = true;
