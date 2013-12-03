@@ -30,25 +30,22 @@ app.factory('socket', function($rootScope){
 function mainController($scope, $http, socket) {
 	$scope.formData = {};
 
-	
+
 
 	$scope.initialize = function() {
 		$scope.formData.search = "";
+		$scope.check = false;
+		socket.on('number', function (data) {
+			$scope.number = data.numberOfFiles;
+		});
+		
 		console.log("initialize() body !");
 	};
 
 	$scope.search = function() {
 
-		socket.emit('next', {
-			message: "next"
-		});
-
-		socket.on('number', function (data) {
-			console.log("Socket on number core.js !");
-		    $scope.number = data.numberOfFiles;
-		});
-
 		console.log("search() body !");
+		$scope.check = true;
 		$http.post('/search', $scope.formData)
 			.success(function() {
 				$('input').val('');
