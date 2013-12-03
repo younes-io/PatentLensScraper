@@ -35,9 +35,10 @@ app.post('/search', function(req, res){
 
 	var keyword	= req.body.search;	//var keyword = "RFID";	// The search keyword
 	
-	for(var i = 0; i < 1; i++) {	// FROM PAGE 0 TO PAGE 364
+	for(var i = 0; i < 2; i++) {	// FROM PAGE 0 TO PAGE 364
 		// The results' page URL
-		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=100&sortBy=publication_date&reverse=true&pageNumber="+i;
+		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=10&sortBy=publication_date&reverse=true&pageNumber="+i;
+		var returnTo = url.parse(urlString, true);
 		
 		request(urlString, function(err, resp, body) {
 		    if (err) throw err;
@@ -51,20 +52,22 @@ app.post('/search', function(req, res){
 		 		var urlF = "http://www.patentlens.net/patentlens/" + $(this).attr('href');
 				var url_parts = url.parse(urlF, true).query;
 				var patnum = url_parts.patnums;
-				var urlNew = "http://www.patentlens.net/patentlens/fulltext.html?patnum=" + patnum + "&language=en&query=" + keyword + "&stemming=true&pid=p0";
+				//var urlNew = "http://www.patentlens.net/patentlens/fulltext.html?patnum=" + patnum + "&language=en&query=" + keyword + "&stemming=true&pid=p0";
+				var urlNew = "http://www.patentlens.net/patentlens/frontpage.html?patnum=" + patnum + "&language=en&query=" + keyword + "&stemming=true&returnTo=expert.html" + returnTo.search + "&pid=p0";
+				urlNew = url.format(urlNew);	//only used with FRONTPAGE (required by returnTo param)
 				
 				request(urlNew, function(err, resp, body) {
 					// We load the DOM tree of the patent page into the variable $$
 					$$ = cheerio.load(body);
 					numberFiles++;
 					var pathFile = __dirname + '/results/result_'+ numberFiles +'.html';
-					var $dataRetrieved = $$('#contents');
+					var $dataRetrieved = $$('.container');
 					// The HTML content of the patent page is put into $dataRetrieved then written in the file pathFile/
 					fs.writeFile(pathFile, $dataRetrieved, function (err) {
 						if (err) throw err;
 						console.log("File saved in " + pathFile);
 					});
-					if (numberFiles < 10){
+					if (numberFiles < 20){
 						checkSearch = true;
 					} else {
 						checkSearch = false;
@@ -74,6 +77,7 @@ app.post('/search', function(req, res){
 		 	});
 		});
 	}
+	numberFiles = 0; //io.sockets.emit('number', {numberOfFiles: numberFiles});
 	res.json(null);
 });
 
