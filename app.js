@@ -3,9 +3,11 @@ var request	= require('request');
 var http 	= require('http');
 var path 	= require('path');
 
-var url = require('url');
+var url 	= require('url');
 var cheerio = require('cheerio'); // builds the DOM tree
-var fs = require('fs');
+var fs 		= require('fs');
+var libxmljs 	= require('libxmljs');
+
 
 var app = express();
 
@@ -37,7 +39,7 @@ app.post('/search', function(req, res){
 	
 	for(var i = 0; i < 2; i++) {	// FROM PAGE 0 TO PAGE 364
 		// The results' page URL
-		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=10&sortBy=publication_date&reverse=true&pageNumber="+i;
+		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=100&sortBy=publication_date&reverse=true&pageNumber="+i;
 		var returnTo = url.parse(urlString, true);
 		
 		request(urlString, function(err, resp, body) {
@@ -67,7 +69,7 @@ app.post('/search', function(req, res){
 						if (err) throw err;
 						console.log("File saved in " + pathFile);
 					});
-					if (numberFiles < 20){
+					if (numberFiles < 200){
 						checkSearch = true;
 					} else {
 						checkSearch = false;
@@ -77,7 +79,66 @@ app.post('/search', function(req, res){
 		 	});
 		});
 	}
-	numberFiles = 0; //io.sockets.emit('number', {numberOfFiles: numberFiles});
+
+	//numberFiles = 0; //io.sockets.emit('number', {numberOfFiles: numberFiles});
+	res.json(null);
+});
+
+app.post('/xmlconvert', function(req, res){
+
+	numberFiles = 20;
+	var arr = ["Inventors", "Title", "Assignees", "Filing Date", "Publication Date", "PCT Publication"];
+	console.log("XML STARTING !!!");
+	console.log(numberFiles);
+
+	var doc = new libxmljs.Document();
+	var pat = doc.node('patents');
+	for(var i = 1; i <= numberFiles; i++){
+
+		var pathFile = __dirname + '/results/result_'+ i +'.html';
+		var pathFileWrite = __dirname + '/XMLresults/results.xml';
+
+		var XMLcontent = "";
+
+		fs.readFile(pathFile, 'utf8', function (err, data) {
+		  	if (err) throw err;
+
+		  	$ = cheerio.load(data);
+		  	var patent = pat.node('patent').attr({num: ++i-numberFiles-1});
+
+		  	$('.container div dl').children().each(function(index, elem){
+
+		  		if( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
+
+		  			var key = $(this).text().trim().replace(' ', '_');
+
+		  			var array = ["Inventors", "Assignees"];
+
+		  			if( array.indexOf(key) !=-1 ) {	// Inventors & Assignees processing
+		  				var keyNode = patent.node(key);	//Inventors node
+		  				
+			  			$(this).nextAll().each(function(index, elem){
+			  				if( $(this)[0].name != 'dd') return false;
+			  				if( $(this)[0].name == 'dd' ) {
+			  					var value = $(this).text().trim();// Inventor's name for instance
+				  				var namePart = keyNode.name().replace(/.$/,'');//.replace(/.*(.)/g,'');	// The inventor tag
+				  				
+				  				keyNode.node(namePart, value);	
+			  				}
+			  				
+			  			});	
+		  			} else {
+		  				var value = $(this).next().text().trim();
+		  				patent.node(key, value);
+		  			}	
+		  		}
+		  	});
+
+			XMLcontent = doc.toString();
+			fs.writeFileSync(pathFileWrite, XMLcontent);
+			console.log("Processing file...");
+		});
+	}
 	res.json(null);
 });
 
