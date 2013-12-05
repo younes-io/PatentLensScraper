@@ -1,6 +1,6 @@
 {
-  "name": "Wrapper",
-  "version": "0.1.0",
+  "name": "PatentLens Scraper",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "start": "node app.js"
@@ -10,8 +10,9 @@
     "cheerio": "*",
     "request": "*",
     "socket.io-client": "*",
-    "socket.io": "*"
+    "socket.io": "*",
+    "libxmljs": "*"
   },
   "author": "Younes Sherlock <younesagma@gmail.com>",
-  "description": "Wrapper App"
+  "description": "A PatentLens Scraper"
 }
