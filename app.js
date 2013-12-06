@@ -35,13 +35,15 @@ var numberFiles = 0;
 
 app.post('/search', function(req, res){
 
-	var keyword	= req.body.search;	//var keyword = "RFID";	// The search keyword
-	
+	numberFiles = 0;
+	var keyword	= req.body.search;	// The search keyword
+	var pageLength = 10;	// Number of results per page
+
 	for(var i = 0; i < 2; i++) {	// FROM PAGE 0 TO PAGE 364
 		// The results' page URL
-		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A&publicationFilingDateType=published&publicationFilingDateFrom=2010-01-01&publicationFilingDateTo=2013-11-13&pageLength=100&sortBy=publication_date&reverse=true&pageNumber="+i;
+		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A,WO_A&publicationFilingDateType=published&publicationFilingDateFrom=2013-01-01&publicationFilingDateTo=2013-11-13&pageLength=" + pageLength + "&sortBy=publication_date&reverse=true&pageNumber="+i;
 		var returnTo = url.parse(urlString, true);
-		
+		var max = i + 1;
 		request(urlString, function(err, resp, body) {
 		    if (err) throw err;
 
@@ -62,14 +64,14 @@ app.post('/search', function(req, res){
 					// We load the DOM tree of the patent page into the variable $$
 					$$ = cheerio.load(body);
 					numberFiles++;
-					var pathFile = __dirname + '/results/result_'+ numberFiles +'.html';
-					var $dataRetrieved = $$('.container');
+					var pathFile = __dirname + '/results/result_'+ numberFiles + '.html';
+					var $dataRetrieved = $$('.container') + '<div class="idPatent">' + patnum + '</div>' ;
 					// The HTML content of the patent page is put into $dataRetrieved then written in the file pathFile/
 					fs.writeFile(pathFile, $dataRetrieved, function (err) {
 						if (err) throw err;
 						console.log("File saved in " + pathFile);
 					});
-					if (numberFiles < 200){
+					if (numberFiles < (pageLength * max) ){
 						checkSearch = true;
 					} else {
 						checkSearch = false;
@@ -86,8 +88,8 @@ app.post('/search', function(req, res){
 
 app.post('/xmlconvert', function(req, res){
 
-	numberFiles = 20;
-	var arr = ["Inventors", "Title", "Assignees", "Filing Date", "Publication Date", "PCT Publication"];
+	 numberFiles = 20;
+	var arr = ["Title", "Applicants/Inventors", "Inventors", "Applicants", "Assignees", "Agents", "Abstract", "Filing Date", "Publication Date", "IPC", "Application Number", "Application Number", "PCT Publication"];
 	console.log("XML STARTING !!!");
 	console.log(numberFiles);
 
@@ -104,15 +106,17 @@ app.post('/xmlconvert', function(req, res){
 		  	if (err) throw err;
 
 		  	$ = cheerio.load(data);
-		  	var patent = pat.node('patent').attr({num: ++i-numberFiles-1});
+
+		  	var idPatent = $('.idPatent').text();
+		  	var patent = pat.node('patent').attr({num: ++i-numberFiles-1}).attr({id: idPatent});
 
 		  	$('.container div dl').children().each(function(index, elem){
 
 		  		if( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
 
-		  			var key = $(this).text().trim().replace(' ', '_');
+		  			var key = $(this).text().trim().replace(' ', '').replace('/','And');
 
-		  			var array = ["Inventors", "Assignees"];
+		  			var array = ["Inventors", "Assignees", "Agents", "Applicants", "ApplicantsAndInventors"];
 
 		  			if( array.indexOf(key) !=-1 ) {	// Inventors & Assignees processing
 		  				var keyNode = patent.node(key);	//Inventors node
@@ -120,12 +124,13 @@ app.post('/xmlconvert', function(req, res){
 			  			$(this).nextAll().each(function(index, elem){
 			  				if( $(this)[0].name != 'dd') return false;
 			  				if( $(this)[0].name == 'dd' ) {
-			  					var value = $(this).text().trim();// Inventor's name for instance
-				  				var namePart = keyNode.name().replace(/.$/,'');//.replace(/.*(.)/g,'');	// The inventor tag
-				  				
+			  					var value = $(this).text().trim();// Inventor's value for instance
+			  					var country = value.match(/\(.*\)/gi).toString().replace('(','').replace(')','');	// => US
+			  					var fullName = value.match(/^[^\d]*,/gi).toString().trim().replace(/,$/gi,'');	//Full name of Inventor / Agent...
+				  				var address = value.match(/,[^,]*\(.{2}\)/gi).toString().replace(/^./gi,'').replace(/.{4}$/gi,'').trim();
+				  				var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');	// The inventor tag
 				  				keyNode.node(namePart, value);	
 			  				}
-			  				
 			  			});	
 		  			} else {
 		  				var value = $(this).next().text().trim();
@@ -145,5 +150,3 @@ app.post('/xmlconvert', function(req, res){
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
 });
-
-
