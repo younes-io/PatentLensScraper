@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
 
-	<title>Sherlock - Scraper App</title>
+	<title>PatentLens Scraper</title>
 	
 
 	<!-- SCROLLS -->
@@ -25,11 +25,11 @@
 <!-- SET THE CONTROLLER AND GET ALL ENTRIES WITH INITIALIZE FUNCTION -->
 <body ng-controller="mainController" ng-init="initialize()">
 	<div class="container">
-
+	<a href="https://github.com/younesherlock/PatentLensScraper"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
 
 		<div class="jumbotron text-center">
-			<h1>Scraper Search</h1>
-			<h4>Made by Y. Sherlock</h4>
+			<h1>PatentLens Scraper</h1>
+			<h5>Made by Y. Sherlock</h5>
 		</div>
 
 		<div id="search-form" class="row">
@@ -41,6 +41,7 @@
 					</div>
 
 					<button type="submit" class="btn btn-primary btn-lg" ng-click="search()" ng-disabled="check">Search</button>
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="xmlConvert()">XML Conversion</button>
 				</form>
 			</div>
 		</div>
