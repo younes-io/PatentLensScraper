@@ -129,7 +129,10 @@ app.post('/xmlconvert', function(req, res){
 			  					var fullName = value.match(/^[^\d]*,/gi).toString().trim().replace(/,$/gi,'');	//Full name of Inventor / Agent...
 				  				var address = value.match(/,[^,]*\(.{2}\)/gi).toString().replace(/^./gi,'').replace(/.{4}$/gi,'').trim();
 				  				var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');	// The inventor tag
-				  				keyNode.node(namePart, value);	
+				  				var namePartNode = keyNode.node(namePart);
+				  				namePartNode.node('FullName',fullName);
+				  				namePartNode.node('Address',address);
+				  				namePartNode.node('Country',country);
 			  				}
 			  			});	
 		  			} else {
