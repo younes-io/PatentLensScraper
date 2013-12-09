@@ -37,9 +37,9 @@ app.post('/search', function(req, res){
 
 	numberFiles = 0;
 	var keyword	= req.body.search;	// The search keyword
-	var pageLength = 10;	// Number of results per page
+	var pageLength = 100;	// Number of results per page
 
-	for(var i = 0; i < 2; i++) {	// FROM PAGE 0 TO PAGE 364
+	for(var i = 0; i < 15; i++) {	// FROM PAGE 0 TO PAGE 364
 		// The results' page URL
 		var urlString =	"http://www.patentlens.net/patentlens/expert.html?query=" + keyword + "&stemming=true&language=en&collections=US_B,EP_B,AU_B,US_A,WO_A&publicationFilingDateType=published&publicationFilingDateFrom=2013-01-01&publicationFilingDateTo=2013-11-13&pageLength=" + pageLength + "&sortBy=publication_date&reverse=true&pageNumber="+i;
 		var returnTo = url.parse(urlString, true);
@@ -87,66 +87,112 @@ app.post('/search', function(req, res){
 });
 
 app.post('/xmlconvert', function(req, res){
+	var directoryPath = __dirname + '/results/';
+    var times = 0;
+	fs.readdir( directoryPath, function( error, files ) {
+        if ( error ) {
+            console.log("Error listing file contents.");
+        } else {
+            var arr = ["Title", "Applicants/Inventors", "Inventors", "Applicants", "Assignees", "Agents", "Abstract", "Filing Date", "Publication Date", "Application Number"];
+            
+            console.log("XML STARTING !!!");
+            console.log(directoryPath);
 
-	 numberFiles = 20;
-	var arr = ["Title", "Applicants/Inventors", "Inventors", "Applicants", "Assignees", "Agents", "Abstract", "Filing Date", "Publication Date", "IPC", "Application Number", "Application Number", "PCT Publication"];
-	console.log("XML STARTING !!!");
-	console.log(numberFiles);
+            var pathFileWrite = __dirname + '/XMLresults/results.xml';
 
-	var doc = new libxmljs.Document();
-	var pat = doc.node('patents');
-	for(var i = 1; i <= numberFiles; i++){
+            var XMLcontent = "";
+            var doc = new libxmljs.Document();
+            var pat = doc.node('patents');
 
-		var pathFile = __dirname + '/results/result_'+ i +'.html';
-		var pathFileWrite = __dirname + '/XMLresults/results.xml';
+            // This function repeatedly calls itself until the files are all read.
+            var readFiles = function(i) {
+                if ( i == files.length ) {
+                    // we are done.
+                    console.log( "Done reading " + (files.length - times -1)  + " files.");
 
-		var XMLcontent = "";
+                } else {
+                	var nameFile = files[i].match(/^\..*$/gi);
 
-		fs.readFile(pathFile, 'utf8', function (err, data) {
-		  	if (err) throw err;
+                	if(nameFile !== null) {
+                        times++;
+                        console.log(times);
+                    } else {
+                        // ++times; console.log(times + " : " + nameFile);
 
-		  	$ = cheerio.load(data);
+                        fs.readFile( directoryPath + files[i], function( error, dataF ) {
+                            if ( error ) {
+                                console.log( "Error reading file. ", error );
+                                console.log("ERROR : File => " + files[i]);
+                            } else {
+                                console.log("Proceeding file... " + files[i] );
+                                $ = cheerio.load(dataF);
 
-		  	var idPatent = $('.idPatent').text();
-		  	var patent = pat.node('patent').attr({num: ++i-numberFiles-1}).attr({id: idPatent});
+                                var idPatent = $('.idPatent').text();
+                                var patent = pat.node('patent').attr({num: i}).attr({id: idPatent});
 
-		  	$('.container div dl').children().each(function(index, elem){
+                                // We loop over all the dt nodes
+                                $('.container div dl').children().each(function(index, elem){
 
-		  		if( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
+                                    if( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
 
-		  			var key = $(this).text().trim().replace(' ', '').replace('/','And');
+                                        var key = $(this).text().trim().replace(' ', '').replace('/','And');    // Inventors/Applicants => InventorsAndApplicants
 
-		  			var array = ["Inventors", "Assignees", "Agents", "Applicants", "ApplicantsAndInventors"];
+                                        var array = ["Inventors", "Assignees", "Applicants", "ApplicantsAndInventors"]; // in case there are many inventors OR agents OR Applicants...
 
-		  			if( array.indexOf(key) !=-1 ) {	// Inventors & Assignees processing
-		  				var keyNode = patent.node(key);	//Inventors node
-		  				
-			  			$(this).nextAll().each(function(index, elem){
-			  				if( $(this)[0].name != 'dd') return false;
-			  				if( $(this)[0].name == 'dd' ) {
-			  					var value = $(this).text().trim();// Inventor's value for instance
-			  					var country = value.match(/\(.*\)/gi).toString().replace('(','').replace(')','');	// => US
-			  					var fullName = value.match(/^[^\d]*,/gi).toString().trim().replace(/,$/gi,'');	//Full name of Inventor / Agent...
-				  				var address = value.match(/,[^,]*\(.{2}\)/gi).toString().replace(/^./gi,'').replace(/.{4}$/gi,'').trim();
-				  				var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');	// The inventor tag
-				  				var namePartNode = keyNode.node(namePart);
-				  				namePartNode.node('FullName',fullName);
-				  				namePartNode.node('Address',address);
-				  				namePartNode.node('Country',country);
-			  				}
-			  			});	
-		  			} else {
-		  				var value = $(this).next().text().trim();
-		  				patent.node(key, value);
-		  			}	
-		  		}
-		  	});
+                                        if( array.indexOf(key) !=-1 ) { // Inventors & Assignees processing
+                                            var keyNode = patent.node(key); //Inventors node
+                                            
+                                            $(this).nextAll().each(function(index, elem){
+                                                if( $(this)[0].name != 'dd') return false;  // if we reach an element with a different tagName, we get out of the loop
+                                                if( $(this)[0].name == 'dd' ) { // in case the following elements are many and have the same tagName
 
-			XMLcontent = doc.toString();
-			fs.writeFileSync(pathFileWrite, XMLcontent);
-			console.log("Processing file...");
-		});
-	}
+                                                    var value = $(this).text().trim();// Inventor's value for instance
+                                                    var fullName = "";
+                                                    if( (fullName = value.match(/^[^\d]*,/gi)) === null) {
+                                                        // console.log(pathFile + ' => ' + idPatent);
+                                                        if( (fullName = value.match(/^[^,]*,/gi)) === null) {
+                                                           //Full name of Inventor / Agent...
+                                                        console.log("full name null");
+                                                        fullName = "full name null";
+                                                        } else {
+                                                            fullName = value.match(/^[^,]*,/gi).toString().trim().replace(/,$/gi,'');
+                                                        }
+                                                    } else {
+                                                        fullName = value.match(/^[^\d]*,/gi).toString().trim().replace(/,$/gi,'');  //Full name of Inventor / Agent...
+                                                    }
+
+                                                    var country = "";
+                                                    if ( (country = value.match(/\(.*\)/gi)) === null ){
+                                                        country = "00";
+                                                    } else {
+                                                        country = value.match(/\(.*\)/gi).toString().replace('(','').replace(')','');   // => US
+                                                    }
+                                                    var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');   // The inventor tag
+                                                    var namePartNode = keyNode.node(namePart);
+
+                                                    namePartNode.node('FullName',fullName);
+                                                    namePartNode.node('Country',country);
+                                                }
+                                            }); 
+                                        } else {    // in case the element doesn't have children
+                                            var value = $(this).next().text().trim();
+                                            patent.node(key, value);
+                                        }   
+                                    }
+                                });
+                                // Finally, we write the XML code into a file
+                                XMLcontent = doc.toString();
+                                fs.writeFileSync(pathFileWrite, XMLcontent);
+                                console.log("Writing XML file... " + files[i] );
+                            }
+                        });
+                    }
+                    readFiles(i+1);
+                }
+            };
+            readFiles(1);
+        }
+    });
 	res.json(null);
 });
 
