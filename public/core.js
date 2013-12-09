@@ -54,5 +54,14 @@ function mainController($scope, $http, socket) {
 				console.log('Error: ' + data);
 			});
 	};
+
+	$scope.xmlConvert = function() {
+		
+		$http.post('/xmlconvert', $scope.formData)
+			.success(function() {})
+			.error(function(data) {
+				console.log('Error: ' + data);
+			});
+	};
 }
 
