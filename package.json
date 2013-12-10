@@ -1,9 +1,11 @@
 {
+  "author": "Younes Sherlock <younesagma@gmail.com>",
   "name": "PatentLensScraper",
+  "description": "A PatentLens scraper",
   "version": "0.1.3",
-  "private": true,
-  "scripts": {
-    "start": "node app.js"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/younesherlock/PatentLensScraper.git"
   },
   "dependencies": {
     "express": "~3.4.4",
@@ -12,7 +14,5 @@
     "socket.io-client": "*",
     "socket.io": "*",
     "libxmljs": "0.8.1"
-  },
-  "author": "Younes Sherlock <younesagma@gmail.com>",
-  "description": "A PatentLens Scraper"
+  }
 }
