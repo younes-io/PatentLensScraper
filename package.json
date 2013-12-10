@@ -1,5 +1,5 @@
 {
-  "name": "PatentLens Scraper",
+  "name": "PatentLensScraper",
   "version": "0.1.2",
   "private": true,
   "scripts": {
@@ -11,7 +11,7 @@
     "request": "*",
     "socket.io-client": "*",
     "socket.io": "*",
-    "libxmljs": "*"
+    "libxmljs": "0.8.1"
   },
   "author": "Younes Sherlock <younesagma@gmail.com>",
   "description": "A PatentLens Scraper"
