@@ -139,7 +139,7 @@ app.post('/xmlconvert', function(req, res){
 
                                         var array = ["Inventors", "Assignees", "Applicants", "ApplicantsAndInventors"]; // in case there are many inventors OR agents OR Applicants...
 
-                                        if( array.indexOf(key) !=-1 ) { // Inventors & Assignees processing
+                                        if( array.indexOf(key) !== -1 ) { // Inventors & Assignees processing
                                             var keyNode = patent.node(key); //Inventors node
                                             
                                             $(this).nextAll().each(function(index, elem){
@@ -162,10 +162,11 @@ app.post('/xmlconvert', function(req, res){
                                                     }
 
                                                     var country = "";
-                                                    if ( (country = value.match(/\(.*\)/gi)) === null ){
+                                                    // TEST COUNTRY
+                                                    if ( (country = value.match(/\([A-Z]{2}\)/gi)) === null ){
                                                         country = "00";
                                                     } else {
-                                                        country = value.match(/\(.*\)/gi).toString().replace('(','').replace(')','');   // => US
+                                                        country = value.match(/\([A-Z]{2}\)/gi).toString().replace('(','').replace(')','');   // => US
                                                     }
                                                     var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');   // The inventor tag
                                                     var namePartNode = keyNode.node(namePart);
