@@ -1,4 +1,4 @@
-PatentLensScraper
+PatentLensScraper [![Build Status](https://travis-ci.org/younesherlock/PatentLensScraper.png?branch=master)](https://travis-ci.org/younesherlock/PatentLensScraper)
 =================
 
 This is a [Patent Lens](http://www.patentlens.net/ "Patent Lens") web scraper.
