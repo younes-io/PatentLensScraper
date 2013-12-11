@@ -96,15 +96,13 @@ app.post('/xmlconvert', function(req, res){
             console.log("Error listing file contents.");
         } else {
             var arr = ["Title", "Applicants/Inventors", "Inventors", "Applicants", "Assignees", "Agents", "Abstract", "Filing Date", "Publication Date", "Application Number"];
-            
-            console.log("XML STARTING !!!");
-            console.log(directoryPath);
-
             var pathFileWrite = __dirname + '/XMLresults/results.xml';
-
             var XMLcontent = "";
             var doc = new libxmljs.Document();
             var pat = doc.node('patents');
+
+            console.log("XML STARTING !!!");
+            console.log(directoryPath);
 
             // This function repeatedly calls itself until the files are all read.
             var readFiles = function(i) {
@@ -138,7 +136,6 @@ app.post('/xmlconvert', function(req, res){
                                     if ( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
 
                                         var key = $(this).text().trim().replace(' ', '').replace('/','And');    // Inventors/Applicants => InventorsAndApplicants
-
                                         var array = ["Inventors", "Assignees", "Applicants", "ApplicantsAndInventors"]; // in case there are many inventors OR agents OR Applicants...
 
                                         if( array.indexOf(key) !== -1 ) { // Inventors & Assignees processing
@@ -165,15 +162,15 @@ app.post('/xmlconvert', function(req, res){
                                                     }
 
                                                     var country = "";
+                                                    var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');   // The inventor tag
+                                                    var namePartNode = keyNode.node(namePart);
+
                                                     // TEST COUNTRY
                                                     if ( (country = value.match(/\([A-Z]{2}\)/gi)) === null ) {
                                                         country = "00";
                                                     } else {
                                                         country = value.match(/\([A-Z]{2}\)/gi).toString().replace('(','').replace(')','');   // => US
                                                     }
-
-                                                    var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');   // The inventor tag
-                                                    var namePartNode = keyNode.node(namePart);
 
                                                     namePartNode.node('FullName',fullName);
                                                     namePartNode.node('Country',country);
