@@ -87,8 +87,10 @@ app.post('/search', function(req, res){
 });
 
 app.post('/xmlconvert', function(req, res){
+
 	var directoryPath = __dirname + '/results/';
     var times = 0;
+
 	fs.readdir( directoryPath, function( error, files ) {
         if ( error ) {
             console.log("Error listing file contents.");
@@ -113,7 +115,7 @@ app.post('/xmlconvert', function(req, res){
                 } else {
                 	var nameFile = files[i].match(/^\..*$/gi);
 
-                	if(nameFile !== null) {
+                	if (nameFile !== null) {
                         times++;
                         console.log(times);
                     } else {
@@ -133,7 +135,7 @@ app.post('/xmlconvert', function(req, res){
                                 // We loop over all the dt nodes
                                 $('.container div dl').children().each(function(index, elem){
 
-                                    if( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
+                                    if ( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
 
                                         var key = $(this).text().trim().replace(' ', '').replace('/','And');    // Inventors/Applicants => InventorsAndApplicants
 
@@ -143,12 +145,13 @@ app.post('/xmlconvert', function(req, res){
                                             var keyNode = patent.node(key); //Inventors node
                                             
                                             $(this).nextAll().each(function(index, elem){
-                                                if( $(this)[0].name != 'dd') return false;  // if we reach an element with a different tagName, we get out of the loop
-                                                if( $(this)[0].name == 'dd' ) { // in case the following elements are many and have the same tagName
+                                                if ( $(this)[0].name != 'dd') // if we reach an element with a different tagName, we get out of the loop
+                                                    return false; 
+                                                if ( $(this)[0].name == 'dd' ) { // in case the following elements are many and have the same tagName
 
                                                     var value = $(this).text().trim();// Inventor's value for instance
                                                     var fullName = "";
-                                                    if( (fullName = value.match(/^[^\d]*,/gi)) === null) {
+                                                    if ( (fullName = value.match(/^[^\d]*,/gi)) === null) {
                                                         // console.log(pathFile + ' => ' + idPatent);
                                                         if( (fullName = value.match(/^[^,]*,/gi)) === null) {
                                                            //Full name of Inventor / Agent...
@@ -163,11 +166,12 @@ app.post('/xmlconvert', function(req, res){
 
                                                     var country = "";
                                                     // TEST COUNTRY
-                                                    if ( (country = value.match(/\([A-Z]{2}\)/gi)) === null ){
+                                                    if ( (country = value.match(/\([A-Z]{2}\)/gi)) === null ) {
                                                         country = "00";
                                                     } else {
                                                         country = value.match(/\([A-Z]{2}\)/gi).toString().replace('(','').replace(')','');   // => US
                                                     }
+
                                                     var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');   // The inventor tag
                                                     var namePartNode = keyNode.node(namePart);
 
@@ -177,6 +181,16 @@ app.post('/xmlconvert', function(req, res){
                                             }); 
                                         } else {    // in case the element doesn't have children
                                             var value = $(this).next().text().trim();
+                                            var isKeyADate = ( key === 'PublicationDate' || key === 'FilingDate' );
+                                            if (isKeyADate) {
+                                                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+                                                var day = value.match(/[^\s]*,/gi).toString().replace(',','');
+                                                var mon = value.match(/^[A-za-z]{3}\s/gi).toString().trim();
+                                                var month = months.indexOf(mon) + 1;
+                                                var year = value.match(/[0-9]{4}$/gi);
+
+                                                value = day + '/' + month + '/' + year;
+                                            }
                                             patent.node(key, value);
                                         }   
                                     }
