@@ -182,6 +182,7 @@ app.post('/xmlconvert', function(req, res){
                                         } else {    // in case the element doesn't have children
                                             var value = $(this).next().text().trim();
                                             var isKeyADate = ( key === 'PublicationDate' || key === 'FilingDate' );
+                                            
                                             if (isKeyADate) {
                                                 var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
                                                 var day = value.match(/[^\s]*,/gi).toString().replace(',','');
