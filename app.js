@@ -14,9 +14,10 @@ var app = express();
 
 // all environments
 
-app.configure(function() {
-	app.use(express.static(__dirname + '/public')); 		// set the static files location /public/img will be /img for users
-	app.use(express.logger('dev')); 						// log every request to the console
+app.configure(function () {
+	"use strict";
+    app.use(express.static(__dirname + '/public')); 		// set the static files location /public/img will be /img for users
+    app.use(express.logger('dev')); 						// log every request to the console
 	app.use(express.bodyParser()); 							// pull information from html in POST
 	app.use(express.methodOverride()); 						// simulate DELETE and PUT
 	app.use(express.json());
@@ -35,6 +36,7 @@ var numberFiles = 0;
 //io.sockets.emit('number', {numberOfFiles: numberFiles});
 
 app.post('/search', function(req, res){
+    "use strict";
 
 	numberFiles = 0;
 	var keyword	= req.body.search;	// The search keyword
@@ -49,7 +51,7 @@ app.post('/search', function(req, res){
 		    if (err) throw err;
 
 		    // We load the DOM tree of the results page into the variable $
-		    $ = cheerio.load(body);
+		    var $ = cheerio.load(body);
 			
 			// We get the link of every patent in this loop
 		 	$('.searchResult a').each(function(){
@@ -82,12 +84,12 @@ app.post('/search', function(req, res){
 		 	});
 		});
 	}
-
 	//numberFiles = 0; //io.sockets.emit('number', {numberOfFiles: numberFiles});
 	res.json(null);
 });
 
 app.post('/xmlconvert', function(req, res){
+    "use strict";
 
 	var directoryPath = __dirname + '/results/';
     var times = 0;
@@ -126,7 +128,7 @@ app.post('/xmlconvert', function(req, res){
                                 console.log("ERROR : File => " + files[i]);
                             } else {
                                 console.log("Proceeding file... " + files[i] );
-                                $ = cheerio.load(dataF);
+                                var $ = cheerio.load(dataF);
 
                                 var idPatent = $('.idPatent').text();
                                 var patent = pat.node('patent').attr({num: i}).attr({id: idPatent});
@@ -137,7 +139,8 @@ app.post('/xmlconvert', function(req, res){
                                     if ( ( $(this)[0].name == 'dt' ) && ( arr.indexOf($(this).text()) != -1 ) ) {
 
                                         var key = $(this).text().trim().replace(' ', '').replace('/','And');    // Inventors/Applicants => InventorsAndApplicants
-                                        var array = ["Inventors", "Assignees", "Applicants", "ApplicantsAndInventors"]; // in case there are many inventors OR agents OR Applicants...
+                                        // var array = ["Inventors", "Assignees", "Applicants", "ApplicantsAndInventors"]; // in case there are many inventors OR agents OR Applicants...
+                                        var array = new Array("Inventors", "Assignees", "Applicants", "ApplicantsAndInventors");
 
                                         if( array.indexOf(key) !== -1 ) { // Inventors & Assignees processing
                                             var keyNode = patent.node(key); //Inventors node
