@@ -7,12 +7,17 @@
     "type": "git",
     "url": "https://github.com/younesherlock/PatentLensScraper.git"
   },
+  "scripts": {
+    "test": "make test"
+  },
   "dependencies": {
     "express": "~3.4.4",
     "cheerio": "*",
     "request": "*",
     "socket.io-client": "*",
     "socket.io": "*",
-    "libxmljs": "0.8.1"
+    "libxmljs": "0.8.1",
+    "chai": "~1.8.1",
+    "mocha": "*"
   }
 }
