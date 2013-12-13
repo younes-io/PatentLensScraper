@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var custom = require('./../custom_functions.js');
+var custom = require('../custom_functions.js');
 
 
 describe('All tests', function(){
