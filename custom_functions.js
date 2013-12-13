@@ -1,5 +1,3 @@
-module.exports = {};
-
 exports.getCountry = function ( value ) {
 
 	var country = "";
