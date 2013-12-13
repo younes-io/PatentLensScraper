@@ -8,6 +8,7 @@ var cheerio = require('cheerio'); // builds the DOM tree
 var fs 		= require('fs');
 var libxmljs 	= require('libxmljs');
 
+var custom = require('./custom_functions.js');   // CUSTOM MODULE
 
 var app = express();
 
@@ -143,34 +144,19 @@ app.post('/xmlconvert', function(req, res){
                                             
                                             $(this).nextAll().each(function(index, elem){
                                                 if ( $(this)[0].name != 'dd') // if we reach an element with a different tagName, we get out of the loop
-                                                    return false; 
+                                                    return false;
+
                                                 if ( $(this)[0].name == 'dd' ) { // in case the following elements are many and have the same tagName
 
                                                     var value = $(this).text().trim();// Inventor's value for instance
-                                                    var fullName = "";
-                                                    if ( (fullName = value.match(/^[^\d]*,/gi)) === null) {
-                                                        // console.log(pathFile + ' => ' + idPatent);
-                                                        if( (fullName = value.match(/^[^,]*,/gi)) === null) {
-                                                           //Full name of Inventor / Agent...
-                                                        console.log("full name null");
-                                                        fullName = "full name null";
-                                                        } else {
-                                                            fullName = value.match(/^[^,]*,/gi).toString().trim().replace(/,$/gi,'');
-                                                        }
-                                                    } else {
-                                                        fullName = value.match(/^[^\d]*,/gi).toString().trim().replace(/,$/gi,'');  //Full name of Inventor / Agent...
-                                                    }
 
-                                                    var country = "";
+                                                    // GET FULLNAME
+                                                    var fullName = custom.getFullName(value);
+                                                    // GET COUNTRY
+                                                    var country = custom.getCountry(value);
+                                                    
                                                     var namePart = keyNode.name().replace(/.$/,'').replace(/sA/,'A');//.replace(/.*(.)/g,'');   // The inventor tag
                                                     var namePartNode = keyNode.node(namePart);
-
-                                                    // TEST COUNTRY
-                                                    if ( (country = value.match(/\([A-Z]{2}\)/gi)) === null ) {
-                                                        country = "00";
-                                                    } else {
-                                                        country = value.match(/\([A-Z]{2}\)/gi).toString().replace('(','').replace(')','');   // => US
-                                                    }
 
                                                     namePartNode.node('FullName',fullName);
                                                     namePartNode.node('Country',country);
@@ -178,17 +164,7 @@ app.post('/xmlconvert', function(req, res){
                                             }); 
                                         } else {    // in case the element doesn't have children
                                             var value = $(this).next().text().trim();
-                                            var isKeyADate = ( key === 'PublicationDate' || key === 'FilingDate' );
-                                            
-                                            if (isKeyADate) {
-                                                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-                                                var day = value.match(/[^\s]*,/gi).toString().replace(',','');
-                                                var mon = value.match(/^[A-za-z]{3}\s/gi).toString().trim();
-                                                var month = months.indexOf(mon) + 1;
-                                                var year = value.match(/[0-9]{4}$/gi);
-
-                                                value = day + '/' + month + '/' + year;
-                                            }
+                                            value = custom.getValueSingleChild(value, key);
                                             patent.node(key, value);
                                         }   
                                     }
