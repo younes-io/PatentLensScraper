@@ -25,7 +25,7 @@ describe('All tests', function(){
 	describe('getValueSingleChild() Test#2', function(){
 		var value = "Oct 26, 2012";
 		var result = custom.getValueSingleChild(value, "FilingDate");
-		expect(country).to.equal("26/10/2012");
+		expect(result).to.equal("26/10/2012");
 	});
 	
 });
