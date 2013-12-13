@@ -1,3 +1,4 @@
+module.exports = {};
 
 exports.getCountry = function ( value ) {
 
