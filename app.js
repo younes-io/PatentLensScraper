@@ -178,13 +178,6 @@ app.post('/xmlconvert', function(req, res){
                                 XMLcontent = doc.toString();
                                 fs.writeFileSync(pathFileWrite, XMLcontent);
                                 console.log("Writing XML file... " + files[i] );
-
-                                // Generate a JSON file from XML
-                                var JSONFilePath = __dirname + '/JSONresults/results.json';
-                                parser.parseString(XMLcontent, function (err, result) {
-                                    fs.writeFileSync(JSONFilePath, JSON.stringify(result));
-                                });
-
                             }
                         });
                     }
@@ -197,9 +190,16 @@ app.post('/xmlconvert', function(req, res){
 	res.json(null);
 });
 
-// app.post('/jsonconvert', function(req, res) {
+app.post('/jsonconvert', function(req, res) {
+    var pathXML = __dirname + '/XMLresults/results.xml';
+    var XMLContent = fs.readFileSync(pathXML, 'utf-8');
+    var JSONFilePath = __dirname + '/JSONresults/results.json';
 
-// });
+    parser.parseString(XMLContent, function (err, result) {
+        fs.writeFileSync(JSONFilePath, JSON.stringify(result));
+    });
+    res.json(null);
+});
 
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
