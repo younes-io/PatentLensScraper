@@ -1,12 +1,14 @@
 var express = require('express');
 var request	= require('request');
-var http 	= require('http');
-var path 	= require('path');
+var http = require('http');
+var path = require('path');
 
-var url 	= require('url');
+var url = require('url');
 var cheerio = require('cheerio'); // builds the DOM tree
-var fs 		= require('fs');
-var libxmljs 	= require('libxmljs');
+var fs = require('fs');
+var libxmljs = require('libxmljs');
+var xml2js = require('xml2js');
+var parser = xml2js.Parser();
 
 var custom = require('./custom_functions.js');   // CUSTOM MODULE
 
@@ -20,8 +22,8 @@ app.configure(function () {
     app.use(express.logger('dev')); 						// log every request to the console
 	app.use(express.bodyParser()); 							// pull information from html in POST
 	app.use(express.methodOverride()); 						// simulate DELETE and PUT
-	app.use(express.json());
-	app.use(express.urlencoded());
+    app.use(express.json());
+    app.use(express.urlencoded());
 	app.use(app.router);
 });
 
@@ -176,6 +178,13 @@ app.post('/xmlconvert', function(req, res){
                                 XMLcontent = doc.toString();
                                 fs.writeFileSync(pathFileWrite, XMLcontent);
                                 console.log("Writing XML file... " + files[i] );
+
+                                // Generate a JSON file from XML
+                                var JSONFilePath = __dirname + '/JSONresults/results.json';
+                                parser.parseString(XMLcontent, function (err, result) {
+                                    fs.writeFileSync(JSONFilePath, JSON.stringify(result));
+                                });
+
                             }
                         });
                     }
@@ -187,6 +196,10 @@ app.post('/xmlconvert', function(req, res){
     });
 	res.json(null);
 });
+
+// app.post('/jsonconvert', function(req, res) {
+
+// });
 
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
