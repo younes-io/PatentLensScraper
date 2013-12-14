@@ -63,5 +63,14 @@ function mainController($scope, $http, socket) {
 				console.log('Error: ' + data);
 			});
 	};
+
+	$scope.jsonConvert = function() {
+		
+		$http.post('/jsonconvert', $scope.formData)
+			.success(function() {})
+			.error(function(data) {
+				console.log('Error: ' + data);
+			});
+	};
 }
 
