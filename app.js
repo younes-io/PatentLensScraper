@@ -9,6 +9,9 @@ var fs = require('fs');
 var libxmljs = require('libxmljs');
 var xml2js = require('xml2js');
 var parser = xml2js.Parser();
+var mongoose = require('mongoose');
+var async = require('async');
+
 
 var custom = require('./custom_functions.js');   // CUSTOM MODULE
 
@@ -191,13 +194,94 @@ app.post('/xmlconvert', function(req, res){
 });
 
 app.post('/jsonconvert', function(req, res) {
+    "use strict";
+
     var pathXML = __dirname + '/XMLresults/results.xml';
-    var XMLContent = fs.readFileSync(pathXML, 'utf-8');
     var JSONFilePath = __dirname + '/JSONresults/results.json';
+    var XMLContent = fs.readFileSync(pathXML, 'utf-8');
 
     parser.parseString(XMLContent, function (err, result) {
         fs.writeFileSync(JSONFilePath, JSON.stringify(result));
     });
+
+    mongoose.connect('mongodb://localhost/test_sid');
+    var db = mongoose.connection;
+    
+    // CREATING THE MONGODB SCHEMA & MODELS
+    db.on('error', console.error.bind(console, 'connection error:'));
+    db.once('open', function callback () {
+
+        var countrySchema = new mongoose.Schema({ 
+            _id: { type: String, match: /[A-Z]{2}/ },
+            name: String
+        });
+
+        var applicantSchema = new mongoose.Schema({
+            _id: Number,
+            fullName: String,
+            country: { type: String, ref: 'Country' }
+        });
+
+        var inventorSchema = new mongoose.Schema({
+            _id: Number,
+            fullName: String,
+            country: { type: String, ref: 'Country' }
+        });
+        
+        var patentSchema = mongoose.Schema({
+            _id: Number,
+            title: String,
+            abstract: String,
+            applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Applicant' }],
+            inventors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Inventor' }],
+            publicationDate: Date
+        })
+
+        var Country = mongoose.model('Country', countrySchema);
+        var Applicant = mongoose.model('Applicant', applicantSchema);
+        var Inventor = mongoose.model('Inventor', inventorSchema);
+        var Patent = mongoose.model('Patent', patentSchema);
+
+        var JSONContent = fs.readFileSync(JSONFilePath, 'utf-8');
+        var data = JSON.parse(JSONContent);
+        var patents = data["patents"]["patent"];
+        var dataLength = patents.length;
+        console.log(dataLength);
+
+        // 
+        var index = 0;
+        async.whilst(
+            function () { return index < 500; },
+            function (callback) {
+                var array = new Array("ApplicantsAndInventors", "Inventors", "Applicants", "Assignees");
+                // SAVE COUNTRIES
+                array.forEach(function(element, i){
+                    var value = element.replace(/.$/,'').replace(/sA/,'A'); // e.g. value === 'ApplicantAndInventor'
+                    console.log(value);
+
+                    if(patents[index][element]) {
+                        patents[index][element][0][value].forEach(function(elem, ind){    // e.g. ApplicantAndInventor node
+                            Country.findOne({ _id: elem["Country"][0] }, function(err, country){
+                                if(err)
+                                    console.log("Error Country !");
+                                if(country === null) {
+                                    var country = new Country({ _id: elem["Country"][0] }).save();
+                                }
+                            });
+                        });
+                    }
+                    
+                });
+                index++;
+                callback(); // Always call last
+            },
+            function (err) {
+                console.log(err);
+            }
+        );
+        // 
+    });
+
     res.json(null);
 });
 
