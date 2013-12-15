@@ -19,6 +19,8 @@
     "libxmljs": "0.8.1",
     "chai": "~1.8.1",
     "mocha": "*",
-    "xml2js": "*"
+    "xml2js": "*",
+    "mongoose": "*",
+    "async": "*"
   }
 }
