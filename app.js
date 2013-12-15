@@ -278,44 +278,40 @@ app.post('/jsonconvert', function(req, res) {
                                                     var country = new Country({ _id: elem["Country"][0] }).save();
                                                 }
                                             });
-                                            console.log("Country Added !");                                        
+                                            console.log("Country Added !");
+
+                                            var applicantFunc = function() {
+                                                Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
+                                                    if(err)
+                                                        console.log("Error Applicant !");
+                                                    if(applicant === null) {
+                                                        var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                    }
+                                                });
+                                            }
+
+                                            var inventorFunc = function() {
+                                                Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
+                                                    if(err)
+                                                        console.log("Error Inventor !");
+                                                    if(inventor === null) {
+                                                        var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                    }
+                                                }); 
+                                            }
 
                                             // SAVE INVENTOR & APPLICANT : USE A CLOSURE TO ACCESS OUTER VARIABLES
                                             switch(value) {
                                                 case "ApplicantAndInventor" :
-                                                    Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
-                                                        if(err)
-                                                            console.log("Error Applicant !");
-                                                        if(applicant === null) {
-                                                            var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
-                                                        }
-                                                    });
-                                                    Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
-                                                        if(err)
-                                                            console.log("Error Inventor !");
-                                                        if(inventor === null) {
-                                                            var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
-                                                        }
-                                                    });                                   
+                                                          applicantFunc();
+                                                          inventorFunc();
                                                     break;
                                                 case "Applicant" :
                                                 case "Assignee" :
-                                                    Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
-                                                        if(err)
-                                                            console.log("Error Applicant !");
-                                                        if(applicant === null) {
-                                                            var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
-                                                        }
-                                                    });
+                                                    applicantFunc();
                                                     break;
                                                 case "Inventor" :
-                                                    Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
-                                                        if(err)
-                                                            console.log("Error Inventor !");
-                                                        if(inventor === null) {
-                                                            var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
-                                                        }
-                                                    });
+                                                    inventorFunc();
                                                     break;
                                             }
 
