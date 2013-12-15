@@ -3,10 +3,10 @@ exports.getCountry = function (value) {
     
 	var country = "";
 
-    if ( (country = value.match(/\([A-Z]{2}\)/gi)) === null ) {
+    if ( (country = value.match(/,?\([A-Z]{2}\)$/g)) === null ) {
         country = "00";
     } else {
-        country = value.match(/\([A-Z]{2}\)/gi).toString().replace('(', '').replace(')', '');   // => US
+        country = value.match(/,?\([A-Z]{2}\)$/g).toString().replace(',','').replace('(', '').replace(')', '');   // => US
     }
 
     return country;
@@ -33,8 +33,8 @@ exports.getValueSingleChild = function( value, key ) {
     
     if (isKeyADate) {
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-        var day = value.match(/[^\s]*,/gi).toString().replace(',', '');
-        var mon = value.match(/^[A-za-z]{3}\s/gi).toString().trim();
+        var day = value.match(/[^ ]*,/gi).toString().replace(',', '');
+        var mon = value.match(/^[A-za-z]{3} /gi).toString().trim();
         var month = months.indexOf(mon) + 1;
         var year = value.match(/[0-9]{4}$/gi);
 
