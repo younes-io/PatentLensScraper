@@ -231,7 +231,7 @@ app.post('/jsonconvert', function(req, res) {
         var patentSchema = mongoose.Schema({
             _id: Number,
             title: String,
-            abstract: String,
+            abstractPatent: String,
             applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Applicant' }],
             inventors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Inventor' }],
             publicationDate: Date
@@ -254,24 +254,51 @@ app.post('/jsonconvert', function(req, res) {
             function () { return index < 500; },
             function (callback) {
                 var array = new Array("ApplicantsAndInventors", "Inventors", "Applicants", "Assignees");
-                // SAVE COUNTRIES
-                array.forEach(function(element, i){
-                    var value = element.replace(/.$/,'').replace(/sA/,'A'); // e.g. value === 'ApplicantAndInventor'
-                    console.log(value);
+                var p = 0;
+                async.whilst(
+                    function () {return p <= array.length },
+                    function (callback) {
+                        var element = array[p];
+                        if (element) {
+                            var value = element.replace(/.$/,'').replace(/sA/,'A'); // e.g. value === 'ApplicantAndInventor'
+                            console.log(value);
 
-                    if(patents[index][element]) {
-                        patents[index][element][0][value].forEach(function(elem, ind){    // e.g. ApplicantAndInventor node
-                            Country.findOne({ _id: elem["Country"][0] }, function(err, country){
-                                if(err)
-                                    console.log("Error Country !");
-                                if(country === null) {
-                                    var country = new Country({ _id: elem["Country"][0] }).save();
-                                }
-                            });
-                        });
+                            if( patents[index][element] ) {
+                                var t = 0;
+                                var valuesLength = patents[index][element][0][value].length;
+                                console.log(valuesLength);
+                                async.whilst(
+                                    function () {return t <= valuesLength },
+                                    function (callback) {
+                                        var elem = patents[index][element][0][value][t];
+                                        if (elem) {
+                                            // SAVE COUNTRY
+                                            Country.findOne({ _id: elem["Country"][0] }, function(err, country){
+                                                if(err)
+                                                    console.log("Error Country !");
+                                                if(country === null) {
+                                                    var country = new Country({ _id: elem["Country"][0] }).save();
+                                                }
+                                            });
+                                            console.log("Added !");                                        
+                                        }
+                                        t++;
+                                        callback();
+                                    },
+                                    function (err) {
+                                        console.log(err);
+                                    }
+                                );
+                            }
+                        }
+                        p++;
+                        callback();
+                    },
+                    function (err) {
+                        console.log(err);
                     }
-                    
-                });
+                );
+
                 index++;
                 callback(); // Always call last
             },
