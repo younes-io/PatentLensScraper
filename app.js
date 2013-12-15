@@ -217,12 +217,12 @@ app.post('/jsonconvert', function(req, res) {
         });
 
         var applicantSchema = new mongoose.Schema({
-            fullName: String,
+            _id: String,
             country: { type: String, ref: 'Country' }
         });
 
         var inventorSchema = new mongoose.Schema({
-            fullName: String,
+            _id: String,
             country: { type: String, ref: 'Country' }
         });
         
@@ -283,37 +283,37 @@ app.post('/jsonconvert', function(req, res) {
                                             // SAVE INVENTOR & APPLICANT : USE A CLOSURE TO ACCESS OUTER VARIABLES
                                             switch(value) {
                                                 case "ApplicantAndInventor" :
-                                                    Applicant.findOne({ fullName: elem["FullName"][0] }, function(err, applicant){
+                                                    Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
                                                         if(err)
                                                             console.log("Error Applicant !");
                                                         if(applicant === null) {
-                                                            var applicant = new Applicant({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                            var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
                                                         }
                                                     });
-                                                    Inventor.findOne({ fullName: elem["FullName"][0] }, function(err, inventor){
+                                                    Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
                                                         if(err)
                                                             console.log("Error Inventor !");
                                                         if(inventor === null) {
-                                                            var inventor = new Inventor({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                            var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
                                                         }
                                                     });                                   
                                                     break;
                                                 case "Applicant" :
                                                 case "Assignee" :
-                                                    Applicant.findOne({ fullName: elem["FullName"][0] }, function(err, applicant){
+                                                    Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
                                                         if(err)
                                                             console.log("Error Applicant !");
                                                         if(applicant === null) {
-                                                            var applicant = new Applicant({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                            var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
                                                         }
                                                     });
                                                     break;
                                                 case "Inventor" :
-                                                    Inventor.findOne({ fullName: elem["FullName"][0] }, function(err, inventor){
+                                                    Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
                                                         if(err)
                                                             console.log("Error Inventor !");
                                                         if(inventor === null) {
-                                                            var inventor = new Inventor({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                            var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
                                                         }
                                                     });
                                                     break;
