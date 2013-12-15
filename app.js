@@ -217,13 +217,11 @@ app.post('/jsonconvert', function(req, res) {
         });
 
         var applicantSchema = new mongoose.Schema({
-            _id: Number,
             fullName: String,
             country: { type: String, ref: 'Country' }
         });
 
         var inventorSchema = new mongoose.Schema({
-            _id: Number,
             fullName: String,
             country: { type: String, ref: 'Country' }
         });
@@ -280,7 +278,48 @@ app.post('/jsonconvert', function(req, res) {
                                                     var country = new Country({ _id: elem["Country"][0] }).save();
                                                 }
                                             });
-                                            console.log("Added !");                                        
+                                            console.log("Country Added !");                                        
+
+                                            // SAVE INVENTOR & APPLICANT : USE A CLOSURE TO ACCESS OUTER VARIABLES
+                                            switch(value) {
+                                                case "ApplicantAndInventor" :
+                                                    Applicant.findOne({ fullName: elem["FullName"][0] }, function(err, applicant){
+                                                        if(err)
+                                                            console.log("Error Applicant !");
+                                                        if(applicant === null) {
+                                                            var applicant = new Applicant({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                        }
+                                                    });
+                                                    Inventor.findOne({ fullName: elem["FullName"][0] }, function(err, inventor){
+                                                        if(err)
+                                                            console.log("Error Inventor !");
+                                                        if(inventor === null) {
+                                                            var inventor = new Inventor({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                        }
+                                                    });                                   
+                                                    break;
+                                                case "Applicant" :
+                                                case "Assignee" :
+                                                    Applicant.findOne({ fullName: elem["FullName"][0] }, function(err, applicant){
+                                                        if(err)
+                                                            console.log("Error Applicant !");
+                                                        if(applicant === null) {
+                                                            var applicant = new Applicant({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                        }
+                                                    });
+                                                    break;
+                                                case "Inventor" :
+                                                    Inventor.findOne({ fullName: elem["FullName"][0] }, function(err, inventor){
+                                                        if(err)
+                                                            console.log("Error Inventor !");
+                                                        if(inventor === null) {
+                                                            var inventor = new Inventor({ fullName: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                        }
+                                                    });
+                                                    break;
+                                            }
+
+                                            console.log("END OF SWITCH !");
                                         }
                                         t++;
                                         callback();
