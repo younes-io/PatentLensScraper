@@ -9,11 +9,24 @@ var fs = require('fs');
 var libxmljs = require('libxmljs');
 var xml2js = require('xml2js');
 var parser = xml2js.Parser();
-var mongoose = require('mongoose');
+
 var async = require('async');
 
-
 var custom = require('./custom_functions.js');   // CUSTOM MODULE
+
+// DATABASE DECLARING VARIABLES
+
+// mongoose.connect('mongodb://localhost/test_sid');
+var database = require('./database.js');
+var mongoose = database.mongoose;
+var db = mongoose.connection;
+
+var Country = database.Country;
+var Applicant = database.Applicant;
+var Inventor = database.Inventor;
+var Patent = database.Patent;
+var PatentApplicant = database.PatentApplicant;
+var PatentInventor = database.PatentInventor;
 
 var app = express();
 
@@ -40,7 +53,7 @@ var numberFiles = 0;
 
 //io.sockets.emit('number', {numberOfFiles: numberFiles});
 
-app.post('/search', function(req, res){
+app.post('/search', function (req, res){
     "use strict";
 
 	numberFiles = 0;
@@ -93,7 +106,7 @@ app.post('/search', function(req, res){
 	res.json(null);
 });
 
-app.post('/xmlconvert', function(req, res){
+app.post('/xmlconvert', function (req, res){
     "use strict";
 
 	var directoryPath = __dirname + '/results/';
@@ -193,7 +206,7 @@ app.post('/xmlconvert', function(req, res){
 	res.json(null);
 });
 
-app.post('/jsonconvert', function(req, res) {
+app.post('/jsonconvert', function (req, res) {
     "use strict";
 
     var pathXML = __dirname + '/XMLresults/results.xml';
@@ -203,55 +216,8 @@ app.post('/jsonconvert', function(req, res) {
     parser.parseString(XMLContent, function (err, result) {
         fs.writeFileSync(JSONFilePath, JSON.stringify(result));
     });
-
-    mongoose.connect('mongodb://localhost/test_sid');
-    var db = mongoose.connection;
     
     // CREATING THE MONGODB SCHEMA & MODELS
-    db.on('error', console.error.bind(console, 'connection error:'));
-    db.once('open', function callback () {
-
-        var countrySchema = new mongoose.Schema({ 
-            _id: { type: String, match: /[A-Z]{2}/ },
-            name: String
-        });
-
-        var applicantSchema = new mongoose.Schema({
-            _id: String,
-            country: { type: String, ref: 'Country' }
-        });
-
-        var inventorSchema = new mongoose.Schema({
-            _id: String,
-            country: { type: String, ref: 'Country' }
-        });
-        
-        var patentSchema = mongoose.Schema({
-            _id: Number,
-            title: String,
-            abstractPatent: String,
-            publicationDate: Date
-        });
-
-        var patentApplicantSchema = mongoose.Schema({
-            patentId: { type: Number, ref: 'Patent' },
-            applicant: { type: String, ref: 'Applicant' },
-            dateP: Date
-        });
-
-        var patentInventorSchema = mongoose.Schema({
-            patentId: { type: Number, ref: 'Patent' },
-            inventor: { type: String, ref: 'Inventor' },
-            dateP: Date
-        });
-
-        var Country = mongoose.model('Country', countrySchema);
-        var Applicant = mongoose.model('Applicant', applicantSchema);
-        var Inventor = mongoose.model('Inventor', inventorSchema);
-        var Patent = mongoose.model('Patent', patentSchema);
-        var PatentApplicant = mongoose.model('PatentApplicant', patentApplicantSchema);
-        var PatentInventor = mongoose.model('PatentInventor', patentInventorSchema);
-
         var JSONContent = fs.readFileSync(JSONFilePath, 'utf-8');
         var data = JSON.parse(JSONContent);
         var patents = data["patents"]["patent"];
@@ -319,9 +285,11 @@ app.post('/jsonconvert', function(req, res) {
                                                     }
                                                     var num = parseInt(patents[index]["$"]["num"]);
                                                     var datePub = patents[index]["PublicationDate"][0].replace('/','-');
+                                                    var pays = elem["Country"][0];
                                                     var patentApplicant = new PatentApplicant({
                                                         patentId: num,
                                                         applicant: applicant["_id"],
+                                                        country: pays,
                                                         dateP: new Date(datePub)
                                                     });
                                                     patentApplicant.save();
@@ -337,8 +305,10 @@ app.post('/jsonconvert', function(req, res) {
                                                         var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] });
                                                         inventor.save();
                                                         var num = parseInt(patents[index]["$"]["num"]);
+                                                        var pays = elem["Country"][0];
                                                         var patentInventor = new PatentInventor({
                                                             patentId: num,
+                                                            country: pays,
                                                             inventor: elem["FullName"][0]
                                                         });
                                                         patentInventor.save();
@@ -385,17 +355,61 @@ app.post('/jsonconvert', function(req, res) {
             }
         ); 
         // 
-    });
+    
 
     res.json(null);
 });
 
-app.get('/test', function(req, res) {
-    
-    console.log("This is a test !");
-    res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
-})
+app.get('/reporting', function (req, res) {
+    res.sendfile('./public/reporting.html');
+});
 
-app.get('/', function(req, res) {
+app.get('/patentspercountry', function (req, res) {
+    // RETRIEVING THE NUMBER OF INVENTORS PER COUNTRY
+    Inventor.aggregate([
+        {
+            $project: {
+                // _id: 0, // let's remove bson id's from request's result
+                country: 1 // we need this field
+            }
+        },
+        {
+            $group: {
+                _id: '$country', // grouping key - group by field country
+                patentInventorsCount: { $sum: 1 }
+            }
+        },{
+            $sort: {
+                patentInventorsCount: -1
+            }
+        }
+    ],  function (err, inventorsPerCountry) {
+            console.log("Inventors per Country : " + inventorsPerCountry.length);
+            // console.log(inventorsPerCountry);
+            //
+            var data = {};
+            var indexes = custom.range(0, inventorsPerCountry.length - 1);
+            async.eachSeries(
+                indexes,
+                function (index, callback) {
+                    var country = inventorsPerCountry[index]["_id"].toLowerCase().toString();
+                    data[country] = inventorsPerCountry[index]["patentInventorsCount"].toString();
+                    callback();
+                },
+                function (err) {
+                    console.log(err);
+                }
+            );
+
+            res.json( data );
+    });
+});
+
+app.get('/keywordsrank', function (req, res) {
+    // KEYWORDS RANK
+
+});
+
+app.get('/', function (req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
 });
