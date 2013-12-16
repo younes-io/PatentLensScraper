@@ -38,7 +38,7 @@ exports.getValueSingleChild = function( value, key ) {
         var month = months.indexOf(mon) + 1;
         var year = value.match(/[0-9]{4}$/gi);
 
-        value = day + '/' + month + '/' + year;
+        value = year + '/' + month + '/' + day;
     }
 
     return value;
