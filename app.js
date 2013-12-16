@@ -230,8 +230,8 @@ app.post('/jsonconvert', function(req, res) {
             _id: Number,
             title: String,
             abstractPatent: String,
-            applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Applicant' }],
-            inventors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Inventor' }],
+            applicants: [{ type: String, ref: 'Applicant' }],
+            inventors: [{ type: String, ref: 'Inventor' }],
             publicationDate: Date
         })
 
@@ -251,6 +251,8 @@ app.post('/jsonconvert', function(req, res) {
         async.whilst(
             function () { return index < 500; },
             function (callback) {
+                var applicantsPatent = new Array();
+                var inventorsPatent = new Array();
                 var array = new Array("ApplicantsAndInventors", "Inventors", "Applicants", "Assignees");
                 var p = 0;
                 async.whilst(
@@ -279,32 +281,36 @@ app.post('/jsonconvert', function(req, res) {
                                                 }
                                             });
                                             console.log("Country Added !");
-
+                                            // The function that adds an Applicant
                                             var applicantFunc = function() {
                                                 Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
                                                     if(err)
                                                         console.log("Error Applicant !");
                                                     if(applicant === null) {
                                                         var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                        applicantsPatent.push(applicant._id);
+                                                        console.log("Added Applicant !");
                                                     }
                                                 });
                                             }
-
+                                            // The function that adds an Inventor
                                             var inventorFunc = function() {
                                                 Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
                                                     if(err)
                                                         console.log("Error Inventor !");
                                                     if(inventor === null) {
                                                         var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
+                                                        inventorsPatent.push(inventor._id);
+                                                        console.log("Added Applicant !");
                                                     }
                                                 }); 
                                             }
 
-                                            // SAVE INVENTOR & APPLICANT : USE A CLOSURE TO ACCESS OUTER VARIABLES
+                                            // SAVE INVENTORS & APPLICANTS
                                             switch(value) {
                                                 case "ApplicantAndInventor" :
-                                                          applicantFunc();
-                                                          inventorFunc();
+                                                    applicantFunc();
+                                                    inventorFunc();
                                                     break;
                                                 case "Applicant" :
                                                 case "Assignee" :
@@ -334,11 +340,23 @@ app.post('/jsonconvert', function(req, res) {
                     }
                 );
 
+                var datePub = patents[index]["PublicationDate"][0].replace('/','-');
+                var abstractVal = patents[index]["Abstract"] ? patents[index]["Abstract"][0] : "";
+                var patent = new Patent({
+                    _id: parseInt(patents[index]["$"]["num"]),
+                    title: patents[index]["Title"][0],
+                    abstractPatent: abstractVal,
+                    applicants: applicantsPatent,
+                    inventors: inventorsPatent,
+                    publicationDate: new Date(datePub)
+                }).save();
+                console.log("Patent #" + index);
                 index++;
                 callback(); // Always call last
             },
             function (err) {
-                console.log(err);
+                // console.log(err);
+                console.info("END OF SAVING PATENTS !");
             }
         );
         // 
