@@ -230,15 +230,25 @@ app.post('/jsonconvert', function(req, res) {
             _id: Number,
             title: String,
             abstractPatent: String,
-            applicants: [{ type: String, ref: 'Applicant' }],
-            inventors: [{ type: String, ref: 'Inventor' }],
             publicationDate: Date
-        })
+        });
+
+        var patentApplicantSchema = mongoose.Schema({
+            patentId: { type: Number, ref: 'Patent' },
+            applicant: [{ type: String, ref: 'Applicant' }]
+        });
+
+        var patentInventorSchema = mongoose.Schema({
+            patentId: { type: Number, ref: 'Patent' },
+            inventor: [{ type: String, ref: 'Inventor' }]
+        });
 
         var Country = mongoose.model('Country', countrySchema);
         var Applicant = mongoose.model('Applicant', applicantSchema);
         var Inventor = mongoose.model('Inventor', inventorSchema);
         var Patent = mongoose.model('Patent', patentSchema);
+        var PatentApplicant = mongoose.model('PatentApplicant', patentApplicantSchema);
+        var PatentInventor = mongoose.model('PatentInventor', patentInventorSchema);
 
         var JSONContent = fs.readFileSync(JSONFilePath, 'utf-8');
         var data = JSON.parse(JSONContent);
@@ -246,38 +256,55 @@ app.post('/jsonconvert', function(req, res) {
         var dataLength = patents.length;
         console.log(dataLength);
 
-        // 
-        var index = 0;
-        async.whilst(
-            function () { return index < 500; },
-            function (callback) {
-                var applicantsPatent = new Array();
-                var inventorsPatent = new Array();
+        //
+        var indexes = custom.range(0, 499);
+        // PATENTS SAVING 
+        async.eachSeries(
+            indexes,
+            function (index, callback) {
+                var datePub = patents[index]["PublicationDate"][0].replace('/','-');
+                var abstractVal = patents[index]["Abstract"] ? patents[index]["Abstract"][0] : "";
+                var patent = new Patent({
+                    _id: parseInt(patents[index]["$"]["num"]),
+                    title: patents[index]["Title"][0],
+                    abstractPatent: abstractVal,
+                    // applicants: applicantsPatent,
+                    // inventors: inventorsPatent,
+                    publicationDate: new Date(datePub)
+                });
+                patent.save();
+                console.log("Patent #" + index);
+                callback();
+            },
+            function (err) {
+                console.log(err);
+            }
+        );
+        // COUNTRIES, APPLICANTS & INVENTORS SAVING
+        async.eachSeries(
+            indexes,
+            function (index, callback) {
                 var array = new Array("ApplicantsAndInventors", "Inventors", "Applicants", "Assignees");
-                var p = 0;
-                async.whilst(
-                    function () {return p <= array.length },
-                    function (callback) {
-                        var element = array[p];
+
+                async.eachSeries(
+                    array,
+                    function (element, callback) {
                         if (element) {
                             var value = element.replace(/.$/,'').replace(/sA/,'A'); // e.g. value === 'ApplicantAndInventor'
                             console.log(value);
 
-                            if( patents[index][element] ) {
-                                var t = 0;
-                                var valuesLength = patents[index][element][0][value].length;
-                                console.log(valuesLength);
-                                async.whilst(
-                                    function () {return t <= valuesLength },
-                                    function (callback) {
-                                        var elem = patents[index][element][0][value][t];
+                            if( (patents[index] !== undefined) && (patents[index][element] !== undefined) ) {
+
+                                async.eachSeries(
+                                    patents[index][element][0][value],
+                                    function (elem, callback) {
                                         if (elem) {
                                             // SAVE COUNTRY
                                             Country.findOne({ _id: elem["Country"][0] }, function(err, country){
                                                 if(err)
                                                     console.log("Error Country !");
                                                 if(country === null) {
-                                                    var country = new Country({ _id: elem["Country"][0] }).save();
+                                                    Country({ _id: elem["Country"][0] }).save();
                                                 }
                                             });
                                             console.log("Country Added !");
@@ -286,11 +313,23 @@ app.post('/jsonconvert', function(req, res) {
                                                 Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
                                                     if(err)
                                                         console.log("Error Applicant !");
-                                                    if(applicant === null) {
-                                                        var applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
-                                                        applicantsPatent.push(applicant._id);
-                                                        console.log("Added Applicant !");
+                                                    if(applicant === null || applicant === undefined ) {
+                                                        applicant = new Applicant({ _id: elem["FullName"][0], country: elem["Country"][0] });
+                                                        applicant.save();
                                                     }
+                                                    var num = parseInt(patents[index]["$"]["num"]);
+                                                    var patentApplicant = new PatentApplicant({
+                                                        patentId: num,
+                                                        applicant: elem["FullName"][0]
+                                                    });
+                                                    patentApplicant.save();
+                                                    // PatentApplicant.findById(num, 'applicants', function (err, patent) {
+                                                    //     var applicantsPatent = patent["applicants"];
+                                                    //     applicantsPatent.push(applicant["_id"]);
+                                                    //     console.log("Patent num "+ applicantsPatent);
+                                                    //     patent.update({ applicants: applicantsPatent });
+                                                    // });
+                                                    console.log("Added Applicant !");
                                                 });
                                             }
                                             // The function that adds an Inventor
@@ -298,10 +337,21 @@ app.post('/jsonconvert', function(req, res) {
                                                 Inventor.findOne({ _id: elem["FullName"][0] }, function(err, inventor){
                                                     if(err)
                                                         console.log("Error Inventor !");
-                                                    if(inventor === null) {
-                                                        var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] }).save();
-                                                        inventorsPatent.push(inventor._id);
-                                                        console.log("Added Applicant !");
+                                                    if(inventor === null || inventor === undefined) {
+                                                        var inventor = new Inventor({ _id: elem["FullName"][0], country: elem["Country"][0] });
+                                                        inventor.save();
+                                                        var num = parseInt(patents[index]["$"]["num"]);
+                                                        var patentInventor = new PatentInventor({
+                                                            patentId: num,
+                                                            inventor: elem["FullName"][0]
+                                                        });
+                                                        patentInventor.save();
+                                                        // Patent.findById(num, 'inventors', function (err, patent) {
+                                                        //     var inventorsPatent = patent["inventors"];
+                                                        //     inventorsPatent.push(inventor["_id"]);
+                                                        //     patent.update({ inventors: inventorsPatent });
+                                                        // });
+                                                        console.log("Added Inventor !");
                                                     }
                                                 }); 
                                             }
@@ -323,7 +373,6 @@ app.post('/jsonconvert', function(req, res) {
 
                                             console.log("END OF SWITCH !");
                                         }
-                                        t++;
                                         callback();
                                     },
                                     function (err) {
@@ -332,38 +381,29 @@ app.post('/jsonconvert', function(req, res) {
                                 );
                             }
                         }
-                        p++;
                         callback();
                     },
                     function (err) {
                         console.log(err);
                     }
                 );
-
-                var datePub = patents[index]["PublicationDate"][0].replace('/','-');
-                var abstractVal = patents[index]["Abstract"] ? patents[index]["Abstract"][0] : "";
-                var patent = new Patent({
-                    _id: parseInt(patents[index]["$"]["num"]),
-                    title: patents[index]["Title"][0],
-                    abstractPatent: abstractVal,
-                    applicants: applicantsPatent,
-                    inventors: inventorsPatent,
-                    publicationDate: new Date(datePub)
-                }).save();
-                console.log("Patent #" + index);
-                index++;
-                callback(); // Always call last
+                callback();
             },
             function (err) {
-                // console.log(err);
-                console.info("END OF SAVING PATENTS !");
+                console.log(err);
             }
-        );
+        ); 
         // 
     });
 
     res.json(null);
 });
+
+app.get('/test', function(req, res) {
+    
+    console.log("This is a test !");
+    res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
+})
 
 app.get('/', function(req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
