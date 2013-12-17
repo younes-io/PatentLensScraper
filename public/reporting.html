@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- META -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+	<title>PatentLensScraper Reporting</title>
+
+	<!-- SCROLLS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+	<link rel="stylesheet" src="jqcloud/jqcloud.css">
+	<style>
+		html body				{ overflow-y:scroll; }
+		body 					{ padding-top:50px; }
+		#word_cloud				{ display: block; }
+	</style>
+	<!-- SPELLS -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+	<script src="jqvmap/jquery.vmap.js"></script>
+	<script src="jqvmap/maps/jquery.vmap.world.js"></script>
+	<script src="wordcloud/wordcloud2.js"></script>
+	<script src="core_reporting.js"></script> <!-- SHOULD BE THE LAST -->
+</head>
+
+<body>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h1 class="alert alert-info"><span class="glyphicon glyphicon-eye-open"></span> Reporting de la banque de données Patent Lens</h1>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<h2 >Carte géostratégique des inventeurs par pays</h2>
+		</div>
+		
+	  <div class="col-md-8">
+		<div id="vmap" style="width: 750px; height: 450px;"></div>
+		
+	  </div>
+
+	  <div class="col-md-4">
+	  	<p>
+			<div id="infoRegionInventor"><span id="pays" class="label label-info"></span> compte <span id="nbrInventeus"  class="badge"></span> inventeurs.</div>
+		</p>
+
+	  </div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Nuage de mots-clés</h2>
+			<canvas id="word_cloud" width="700" height="400"></canvas>
+		</div>
+	</div>
+
+</div>
+
+</body>
+</html>
