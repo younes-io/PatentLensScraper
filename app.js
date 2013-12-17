@@ -10,10 +10,8 @@ var libxmljs = require('libxmljs');
 var xml2js = require('xml2js');
 var parser = xml2js.Parser();
 
-var async = require('async');
-
 var custom = require('./custom_functions.js');   // CUSTOM MODULE
-
+var async = custom.async;
 // DATABASE DECLARING VARIABLES
 
 // mongoose.connect('mongodb://localhost/test_sid');
@@ -45,7 +43,7 @@ app.configure(function () {
 
 
 var server = http.createServer(app);
-var io = require('socket.io').listen(server);
+// var io = require('socket.io').listen(server);
 
 server.listen(8080);
 
@@ -406,18 +404,15 @@ app.get('/patentspercountry', function (req, res) {
 
 app.get('/keywordsrank', function (req, res) {
     // KEYWORDS RANK
-    var data = [];
-    var keywords = {};
+    
+    // var keywords = {};
+    
 
     Patent.find({}, { title: 1}, function (err, patents) {
     	console.log(patents[48]['title']);
-    	var symbols = new Array(
-        ' ', 'and', 'or', 'the', 'i', 'by', 'how',
-        'a', 'of', 'to', 'is', 'as', 'when', 'where',
-        'an', 'in', 'for', 'with', 'are', 'what',
-        'at', 'be', 'that', 'many', 'on', 'from');
-
-    	var indexes = custom.range(0, patents.length - 1);
+    	var keywords = {};
+    	var data = [];
+    	var indexes = custom.range( 0, (patents.length - 1) / 3 );	// JUST THE FOURTH OF THE PATENTS !!!
     	async.eachSeries(
     		indexes,
     		function (index, callback) {
@@ -431,29 +426,14 @@ app.get('/keywordsrank', function (req, res) {
 
 		    	var string = data.join(',');
 				string = string.replace(new RegExp(/ /gi), ',');
-    			var array = string.replace(new RegExp(/[^-a-zA-Z],/gi), "").toLowerCase().split(" ");
+    			var array = string.replace(new RegExp(/[^-a-zA-Z,]/gi), "").toLowerCase().split(" ");
     			var intermediate = array.join(',').split(',');
-
-    			var intermediateLength = custom.range(0, 200);
-    			async.eachSeries(
-    				intermediateLength,
-    				function (i, callback) {
-    					if ( symbols.indexOf( intermediate[i] ) === -1 ) {
-    						if ( keywords[intermediate[i]] !== null && keywords[intermediate[i]] !== undefined ) {
-	    						keywords[intermediate[i]]++;
-	    					} else {
-	    						keywords[intermediate[i]] = 1;
-	    						console.log(intermediate[i]);
-	    					}
-    					}
-    					callback();
-    				},
-    				function (err) {
-    					if (err)
-    						console.log(err);
-    						res.send({result: keywords});
-    				}
-    			);
+    			var intermediateLength = intermediate.length;
+    			// console.log(intermediateLength);
+    			// custom.countKeywords(intermediate, 0, intermediateLength, res);
+    			var path = __dirname + '/JSONresults/keywords.json';
+    			fs.writeFileSync(path, JSON.stringify({results: intermediate}), "utf-8");
+    			res.send(null);
     		}
     	);
     });
