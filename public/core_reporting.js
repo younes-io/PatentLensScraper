@@ -2,18 +2,25 @@ $( document ).ready(function() {
 	$('#infoRegionInventor').hide();
 
 	$.getJSON( "/patentspercountry", function ( data ) {
-		WordCloud(
-			$('#word_cloud')[0],
-			{ 
-				list: [['foo', 12], ['bar', 6], ['people', 28], ['smack', 21], ['heyy', 10], ['nice', 2], ['blank', 35]] 
-			} 
-		);
 		console.log("US = " + data["US"]);
 		createMap(data);
 	});
 		
-	var createListForWordCloud = function () {
+	$.getJSON("/keywordsgenerate", function ( data ) {
+		// alert(data["filePath"]);
+		createListForWordCloud( data );
 		
+	});
+
+	var createListForWordCloud = function ( data ) {
+		WordCloud(
+			$('#word_cloud')[0],
+			{ 
+				list: data.result,
+				// gridSize: 8,
+				
+			} 
+		);
 	}
 	
 	var createMap = function ( data ) {
@@ -44,7 +51,7 @@ $( document ).ready(function() {
 		        }
 		        $('#pays').html(region);
 		        $('#nbrInventeus').html(count);
-		        $('#infoRegionInventor').show();
+		        $('#infoRegionInventor').css('font-weight', 'bold').show();
 		    }
 		});
 	}
