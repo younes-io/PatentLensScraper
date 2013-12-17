@@ -407,10 +407,15 @@ app.get('/patentspercountry', function (req, res) {
 app.get('/keywordsrank', function (req, res) {
     // KEYWORDS RANK
     var data = [];
-    var keywords = [];
+    var keywords = {};
 
     Patent.find({}, { title: 1}, function (err, patents) {
     	console.log(patents[48]['title']);
+    	var symbols = new Array(
+        ' ', 'and', 'or', 'the', 'i', 'by', 'how',
+        'a', 'of', 'to', 'is', 'as', 'when', 'where',
+        'an', 'in', 'for', 'with', 'are', 'what',
+        'at', 'be', 'that', 'many', 'on', 'from');
 
     	var indexes = custom.range(0, patents.length - 1);
     	async.eachSeries(
@@ -426,12 +431,31 @@ app.get('/keywordsrank', function (req, res) {
 
 		    	var string = data.join(',');
 				string = string.replace(new RegExp(/ /gi), ',');
-    			var array = string.replace(new RegExp(/[0-9:\/;()./?\\]/gi), "").toLowerCase().split(" ");
-    			var intermediate = array.join(',');
-    			res.send(intermediate.split(','));
+    			var array = string.replace(new RegExp(/[^-a-zA-Z],/gi), "").toLowerCase().split(" ");
+    			var intermediate = array.join(',').split(',');
+
+    			var intermediateLength = custom.range(0, 200);
+    			async.eachSeries(
+    				intermediateLength,
+    				function (i, callback) {
+    					if ( symbols.indexOf( intermediate[i] ) === -1 ) {
+    						if ( keywords[intermediate[i]] !== null && keywords[intermediate[i]] !== undefined ) {
+	    						keywords[intermediate[i]]++;
+	    					} else {
+	    						keywords[intermediate[i]] = 1;
+	    						console.log(intermediate[i]);
+	    					}
+    					}
+    					callback();
+    				},
+    				function (err) {
+    					if (err)
+    						console.log(err);
+    						res.send({result: keywords});
+    				}
+    			);
     		}
     	);
-    	
     });
 });
 
