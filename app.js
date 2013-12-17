@@ -402,22 +402,19 @@ app.get('/patentspercountry', function (req, res) {
     });
 });
 
-app.get('/keywordsrank', function (req, res) {
+app.get('/keywordsgenerate', function (req, res) {
     // KEYWORDS RANK
-    
-    // var keywords = {};
-    
 
     Patent.find({}, { title: 1}, function (err, patents) {
     	console.log(patents[48]['title']);
     	var keywords = {};
     	var data = [];
     	var indexes = custom.range( 0, (patents.length - 1) / 3 );	// JUST THE FOURTH OF THE PATENTS !!!
+    	// HINT : APPLY EACHSERIES TO PATENTS' TITLES !!!
     	async.eachSeries(
     		indexes,
     		function (index, callback) {
     			data.push(patents[index]["title"]);
-    			// console.log(index);
     			callback();
     		},
     		function (err) {
@@ -428,16 +425,14 @@ app.get('/keywordsrank', function (req, res) {
 				string = string.replace(new RegExp(/ /gi), ',');
     			var array = string.replace(new RegExp(/[^-a-zA-Z,]/gi), "").toLowerCase().split(" ");
     			var intermediate = array.join(',').split(',');
-    			var intermediateLength = intermediate.length;
+    			// var intermediateLength = intermediate.length;
     			// console.log(intermediateLength);
-    			// custom.countKeywords(intermediate, 0, intermediateLength, res);
-    			var path = __dirname + '/JSONresults/keywords.json';
-    			fs.writeFileSync(path, JSON.stringify({results: intermediate}), "utf-8");
-    			res.send(null);
+    			custom.countKeywords(intermediate, 0, 3000, res);
     		}
     	);
     });
 });
+
 
 app.get('/', function (req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
