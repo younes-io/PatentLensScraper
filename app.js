@@ -400,14 +400,39 @@ app.get('/patentspercountry', function (req, res) {
                     console.log(err);
                 }
             );
-
             res.json( data );
     });
 });
 
 app.get('/keywordsrank', function (req, res) {
     // KEYWORDS RANK
+    var data = [];
+    var keywords = [];
 
+    Patent.find({}, { title: 1}, function (err, patents) {
+    	console.log(patents[48]['title']);
+
+    	var indexes = custom.range(0, patents.length - 1);
+    	async.eachSeries(
+    		indexes,
+    		function (index, callback) {
+    			data.push(patents[index]["title"]);
+    			// console.log(index);
+    			callback();
+    		},
+    		function (err) {
+    			if (err) 
+    				console.log(err);
+
+		    	var string = data.join(',');
+				string = string.replace(new RegExp(/ /gi), ',');
+    			var array = string.replace(new RegExp(/[0-9:\/;()./?\\]/gi), "").toLowerCase().split(" ");
+    			var intermediate = array.join(',');
+    			res.send(intermediate.split(','));
+    		}
+    	);
+    	
+    });
 });
 
 app.get('/', function (req, res) {
