@@ -12,9 +12,8 @@ var parser = xml2js.Parser();
 
 var custom = require('./custom_functions.js');   // CUSTOM MODULE
 var async = custom.async;
-// DATABASE DECLARING VARIABLES
 
-// mongoose.connect('mongodb://localhost/test_sid');
+// DATABASE DECLARING VARIABLES
 var database = require('./database.js');
 var mongoose = database.mongoose;
 var db = mongoose.connection;
@@ -25,6 +24,7 @@ var Inventor = database.Inventor;
 var Patent = database.Patent;
 var PatentApplicant = database.PatentApplicant;
 var PatentInventor = database.PatentInventor;
+var MotCle = database.Keyword;
 
 var app = express();
 
@@ -43,13 +43,13 @@ app.configure(function () {
 
 
 var server = http.createServer(app);
-// var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(server);
 
 server.listen(8080);
 
 var numberFiles = 0;
 
-//io.sockets.emit('number', {numberOfFiles: numberFiles});
+io.sockets.emit('number', {numberOfFiles: numberFiles});
 
 app.post('/search', function (req, res){
     "use strict";
@@ -230,13 +230,43 @@ app.post('/jsonconvert', function (req, res) {
             function (index, callback) {
                 var datePub = patents[index]["PublicationDate"][0].replace('/','-');
                 var abstractVal = patents[index]["Abstract"] ? patents[index]["Abstract"][0] : "";
-                var patent = new Patent({
+                var titre = patents[index]["Title"][0];
+                Patent({
                     _id: parseInt(patents[index]["$"]["num"]),
-                    title: patents[index]["Title"][0],
+                    title: titre,
                     abstractPatent: abstractVal,
                     publicationDate: new Date(datePub)
+                }).save(function (err) {
+                    if (err) console.log(err);
+                    // SAVING KEYWORDS IN MONGODB
+                    var titleKeywords = custom.titleToKeywords(titre);
+                    console.log(titleKeywords);
+                    var titleKeywordsLength = custom.range(0, titleKeywords.length - 1);
+                    async.eachSeries(
+                        titleKeywordsLength,
+                        function (i, callback) {
+                            var tkey = titleKeywords[i].toString();
+                            var symbols = new Array(
+                            ' ', 'and', 'or', 'the', 'i', 'by', 'how',
+                            'a', 'of', 'to', 'is', 'as', 'when', 'where',
+                            'an', 'in', 'for', 'with', 'are', 'what',
+                            'at', 'be', 'that', 'many', 'on', 'from' );
+
+                            if ( (symbols.indexOf(tkey) === -1) && (tkey.length > 2) ) {
+                                MotCle({
+                                    patentId: parseInt(patents[index]["$"]["num"]),
+                                    name: tkey
+                                }).save();
+                            }
+                            callback();
+                        },
+                        function (err) {
+                          if (err)
+                            console.log(err);
+                            console.log("All the keyword were inserted !");
+                        }
+                    );
                 });
-                patent.save();
                 console.log("Patent #" + index);
                 callback();
             },
@@ -244,7 +274,7 @@ app.post('/jsonconvert', function (req, res) {
                 console.log(err);
             }
         );
-        // COUNTRIES, APPLICANTS & INVENTORS / PATENTS SAVING
+        // COUNTRIES, APPLICANTS & INVENTORS SAVING
         async.eachSeries(
             indexes,
             function (index, callback) {
@@ -264,7 +294,7 @@ app.post('/jsonconvert', function (req, res) {
                                     function (elem, callback) {
                                         if (elem) {
                                             // SAVE COUNTRY
-                                            Country.findOne({ _id: elem["Country"][0] }, function(err, country){
+                                            Country.findOne({ _id: elem["Country"][0] }, function(err, country) {
                                                 if(err)
                                                     console.log("Error Country !");
                                                 if(country === null) {
@@ -274,7 +304,7 @@ app.post('/jsonconvert', function (req, res) {
                                             console.log("Country Added !");
                                             // The function that adds an Applicant + The PatentApplicant
                                             var applicantFunc = function() {
-                                                Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant){
+                                                Applicant.findOne({ _id: elem["FullName"][0] }, function(err, applicant) {
                                                     if(err)
                                                         console.log("Error Applicant !");
                                                     if(applicant === null || applicant === undefined ) {
@@ -402,7 +432,7 @@ app.get('/patentspercountry', function (req, res) {
     });
 });
 
-app.get('/keywordsgenerate', function (req, res) {
+app.get('/keywordsgenerateNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN', function (req, res) {
     // KEYWORDS RANK
 
     Patent.find({}, { title: 1}, function (err, patents) {
@@ -425,9 +455,7 @@ app.get('/keywordsgenerate', function (req, res) {
 				string = string.replace(new RegExp(/ /gi), ',');
     			var array = string.replace(new RegExp(/[^-a-zA-Z,]/gi), "").toLowerCase().split(" ");
     			var intermediate = array.join(',').split(',');
-    			// var intermediateLength = intermediate.length;
-    			// console.log(intermediateLength);
-    			custom.countKeywords(intermediate, 0, 3000, res);
+    			custom.countKeywords(intermediate, 0, 4000, res);
     		}
     	);
     });
