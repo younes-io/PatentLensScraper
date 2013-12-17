@@ -46,6 +46,16 @@ exports.getValueSingleChild = function( value, key ) {
     return value;
 };
 
+exports.titleToKeywords = function ( title ) {
+  var keywordsTitle = new Array();
+  
+  title = title.toLowerCase();
+  var string = title.replace(new RegExp(/[^-a-zA-Z, ]/gi), "").replace(',', ' ');
+  keywordsTitle = string.split(' ');
+  
+  return keywordsTitle;
+}
+
 exports.range = function (low, high, step) {
   // From: http://phpjs.org/functions
   // +   original by: Waldo Malqui Silva
@@ -91,43 +101,20 @@ exports.range = function (low, high, step) {
 };
 
 exports.countKeywords = function ( intermediate, from, to, resp ) {
-var i = from;
-var keywords = {};
-var finalKeywords = new Array();
-var symbols = new Array(
-        ' ', 'and', 'or', 'the', 'i', 'by', 'how',
-        'a', 'of', 'to', 'is', 'as', 'when', 'where',
-        'an', 'in', 'for', 'with', 'are', 'what',
-        'at', 'be', 'that', 'many', 'on', 'from' );
 
-  async.whilst(
-      function () { return i < to; },
-      function (callback) {
-        // console.log(i + " => " + intermediate[i]);
-          if ( symbols.indexOf( intermediate[i] ) === -1 ) {
-            console.log(i + " => " + intermediate[i]);
-          if ( keywords[intermediate[i]] !== null && keywords[intermediate[i]] !== undefined ) {
-            keywords[intermediate[i]]++;
-          } else {
-            keywords[intermediate[i]] = 1;
-            // console.log(intermediate[i]);
-          }
+
+    async.whilst(
+        function () { return i < to; },
+        function (callback) {
+         
+            i++;
+            callback();
+        },
+        function (err) {
+          if (err)
+            console.log(err);
         }
-          i++;
-          callback();
-      },
-      function (err) {
-        if (err)
-          console.log(err);
-        for (var key in keywords) {
-          if ( parseInt(keywords[key]) > 5 && key !== 'undefined' ) {
-            finalKeywords.push([key, keywords[key]]);
-          }
-          
-        }
-        resp.send({result: finalKeywords}); 
-      }
-  );
+    );
 };
 
 exports.async = async;
