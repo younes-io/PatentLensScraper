@@ -2,21 +2,21 @@ $( document ).ready(function() {
 	$('#infoRegionInventor').hide();
 
 	$.getJSON( "/patentspercountry", function ( data ) {
-		console.log("US = " + data["US"]);
+		// console.log("US = " + data["US"]);
 		createMap(data);
 	});
 		
 	$.getJSON("/keywordsgenerate", function ( data ) {
 		// alert(data["filePath"]);
-		createListForWordCloud( data );
-		
+		createListForWordCloud( data.result );
+		// alert(data.result.length);
 	});
 
 	var createListForWordCloud = function ( data ) {
 		WordCloud(
 			$('#word_cloud')[0],
 			{ 
-				list: data.result,
+				list: data
 				// gridSize: 8,
 				
 			} 
