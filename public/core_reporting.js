@@ -1,16 +1,78 @@
 $( document ).ready(function() {
 	$('#infoRegionInventor').hide();
 
-	$.getJSON( "/patentspercountry", function ( data ) {
+	$.getJSON( "/inventorspercountry", function ( data ) {
 		// console.log("US = " + data["US"]);
 		createMap(data);
 	});
-		
+
 	$.getJSON("/keywordsgenerate", function ( data ) {
 		// alert(data["filePath"]);
 		createListForWordCloud( data.result );
 		// alert(data.result.length);
 	});
+
+	$.getJSON("/toptenauthours", function ( data ) {
+		console.log(data.length);
+		createTopTenAuthoursColumnChart(data);
+	});
+
+	var createTopTenAuthoursColumnChart = function ( data ) {
+		$('#toptenauthours').highcharts({
+		    chart: {
+		        type: 'column',
+		        margin: [ 50, 50, 100, 80]
+		    },
+		    credits: {
+		    	enabled: true,
+		    	href: "https://github.com/younesherlock/PatentLensScraper",
+		    	text: "Sherlock"
+		    },
+		    title: {
+		        text: 'Classement des TOP 10 auteurs'
+		    },
+		    xAxis: {
+		        categories: data.categories,
+		        labels: {
+		            rotation: 0,
+		            style: {
+		                fontSize: '13px',
+		                fontFamily: 'Verdana, sans-serif'
+		            }
+		        }
+		    },
+		    yAxis: {
+		        min: 0,
+		        title: {
+		            text: 'Nombre de brevets publiés par auteur'
+		        },
+		        allowDecimals: false
+		    },
+		    legend: {
+		        enabled: false
+		    },
+		    tooltip: {
+		        pointFormat: 'Nombre de publications: <b>{point.y} brevets</b>',
+		    },
+		    series: [{
+		        name: 'Brevets',
+		        data: data.data,
+		        dataLabels: {
+		            enabled: true,
+		            rotation: 0,
+		            color: '#FFFFFF',
+		            align: 'center',
+		            x: 0,
+		            y: 20,
+		            style: {
+		                fontSize: '10px',
+		                fontFamily: 'Verdana, sans-serif',
+		                textShadow: '0 0 3px black'
+		            }
+		        }
+		    }]
+		});
+	}
 
 	var createListForWordCloud = function ( data ) {
 		WordCloud(
