@@ -455,10 +455,10 @@ app.get('/keywordsgenerate', function (req, res) {
                 indexes,
                 function (index, callback) {
                     // console.log(index);
-                    var forbidden =new Array('between','therefor','such','via','thereof','use');
+                    var forbidden =new Array('between','therefor','such','via','thereof','use','methods','method');
                     var ingWords = new RegExp(/.*ing$/g);
                     if ( ( forbidden.indexOf(keywords[index]["_id"]) === -1 ) && ( ingWords.test(keywords[index]["_id"]) === false) && (keywords[index]["number"] >= 7) ){
-                        keywordsFinal.push([keywords[index]["_id"], Math.sqrt(keywords[index]["number"])*8]);
+                        keywordsFinal.push([keywords[index]["_id"], Math.sqrt(keywords[index]["number"])*7]);
                     }
                     callback();
                 },

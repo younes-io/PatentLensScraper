@@ -113,8 +113,10 @@ $( document ).ready(function() {
 		WordCloud(
 			$('#word_cloud')[0],
 			{ 
-				list: data
-				// gridSize: 8,
+				list: data,
+				hover: function (item, dimension, event) {
+					console.log(item);
+				}
 				
 			} 
 		);
