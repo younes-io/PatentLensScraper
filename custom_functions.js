@@ -6,7 +6,7 @@ exports.getCountry = function (value) {
 	var country = "";
 
     if ( (country = value.match(/,?\([A-Z]{2}\)$/g)) === null ) {
-        country = "00";
+        country = "US";
     } else {
         country = value.match(/,?\([A-Z]{2}\)$/g).toString().replace(',','').replace('(', '').replace(')', '');   // => US
     }
@@ -98,23 +98,6 @@ exports.range = function (low, high, step) {
   }
 
   return matrix;
-};
-
-exports.countKeywords = function ( intermediate, from, to, resp ) {
-
-
-    async.whilst(
-        function () { return i < to; },
-        function (callback) {
-         
-            i++;
-            callback();
-        },
-        function (err) {
-          if (err)
-            console.log(err);
-        }
-    );
 };
 
 exports.async = async;
