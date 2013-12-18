@@ -397,7 +397,7 @@ app.get('/reporting', function (req, res) {
     res.sendfile('./public/reporting.html');
 });
 
-app.get('/patentspercountry', function (req, res) {
+app.get('/inventorspercountry', function (req, res) {
     // RETRIEVING THE NUMBER OF INVENTORS PER COUNTRY
     Inventor.aggregate([
         {
@@ -454,7 +454,7 @@ app.get('/keywordsgenerate', function (req, res) {
                 indexes,
                 function (index, callback) {
                     console.log(index);
-                    if (keywords[index]["number"] >= 7 ){
+                    if (keywords[index]["number"] >= 15 ){
                         keywordsFinal.push([keywords[index]["_id"], keywords[index]["number"]]);
                     }
                     callback();
@@ -470,11 +470,40 @@ app.get('/keywordsgenerate', function (req, res) {
     //     console.log('The number of keywords is ' + number);
     //     // number = number.toString();
     //     res.json({result: [[number, 30]]});
-    // });
-
-    // res.json({ result: [["haha", 12], ["spank", 34], ["long", 40]] });
+    // })
 });
 
+app.get('/toptenauthours', function (req, res) {
+
+    var categories = new Array();
+    var data = new Array();
+
+    PatentInventor.aggregate([
+        { $project: { inventor: 1 } },
+        { $group: { _id: "$inventor" , number: { $sum: 1 } } },
+        { $sort : { number: -1 } },
+        { $limit : 10 }
+        ],
+        function (err, numberInventors) {
+            if (err) return console.log(err);
+            var indexes = custom.range(0, numberInventors.length - 1);
+            console.log("numberInventors processing... " + numberInventors.length);
+            async.eachSeries(
+                indexes,
+                function (index, callback) {
+                    console.log(index);
+                        categories.push(numberInventors[index]["_id"]);
+                        data.push(numberInventors[index]["number"]);
+                    callback();
+                },
+                function (err) {
+                    console.log(err);
+                }
+            );
+        res.json({ categories: categories, 'data': data });
+    });
+    // res.json(null);
+});
 
 app.get('/', function (req, res) {
 	res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
