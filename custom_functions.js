@@ -56,6 +56,22 @@ exports.titleToKeywords = function ( title ) {
   return keywordsTitle;
 }
 
+exports.sortArray = function ( array ) {
+  var arrayLength = array.length;  
+	for (var x = 0; x < arrayLength; x++) {
+	    var max = array[x];
+	    for (var y = x + 1; y < arrayLength; y++) {
+	        if (array[y][1] > max[1]) {
+	            max = array[y];
+	            array[y] = array[x];
+	            array[x] = max;
+	        }
+	    }
+	}
+
+  return array;
+}
+
 exports.range = function (low, high, step) {
   // From: http://phpjs.org/functions
   // +   original by: Waldo Malqui Silva

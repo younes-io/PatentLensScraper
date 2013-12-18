@@ -8,7 +8,7 @@
 	<title>PatentLensScraper Reporting</title>
 
 	<!-- SCROLLS -->
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+	<link rel="stylesheet" href="bootstrap/bootstrap.min.css"><!-- load bootstrap -->
 	<link rel="stylesheet" src="jqcloud/jqcloud.css">
 	<style>
 		html body				{ overflow-y:scroll; }
@@ -16,7 +16,7 @@
 		#word_cloud				{ display: block; }
 	</style>
 	<!-- SPELLS -->
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+	<script src="jquery/jquery.min.js"></script><!-- load jquery -->
 	<script src="jqvmap/jquery.vmap.js"></script>
 	<script src="jqvmap/maps/jquery.vmap.world.js"></script>
 	<script src="wordcloud/wordcloud2.js"></script>
@@ -39,7 +39,7 @@
 		</div>
 		
 	  <div class="col-md-8">
-		<div id="vmap" style="width: 750px; height: 450px;"></div>
+		<div id="vmap" style="width: 750px; height: 450px;" class="well"></div>
 		
 	  </div>
 
@@ -53,11 +53,14 @@
 	<div class="row">
 		<div class="col-md-12">
 			<h2>Nuage de mots-clés</h2>
-			<canvas id="word_cloud" width="800" height="500" class="well"></canvas>
+			<div>
+				<canvas id="word_cloud" width="800" height="500" class="well"></canvas>
+			</div>
 			<div id="toptenauthours" class="well"></div>
+			<div id="toptenkeywords" class="well"></div>
 		</div>
 	</div>
-	<div>footer</div>
+	<div class="well">2013 &copy; <a href="//twitter.com/occulti">@occulti</a></div>
 </div>
 
 </body>

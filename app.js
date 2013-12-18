@@ -440,11 +440,12 @@ app.get('/inventorspercountry', function (req, res) {
 app.get('/keywordsgenerate', function (req, res) {
     // KEYWORDS RANK
     var keywordsFinal = new Array();
+    var chart = new Array();
 
     Keyword.aggregate([
         { $project: { name: 1 } },
         { $group: { _id: "$name" , number: { $sum: 1 } } },
-        { $sort : { number: 1 }}
+        { $sort : { number: -1 }}
         ],
         function (err, keywords) {
             if (err) return console.log(err);
@@ -453,24 +454,39 @@ app.get('/keywordsgenerate', function (req, res) {
             async.eachSeries(
                 indexes,
                 function (index, callback) {
-                    console.log(index);
+                    // console.log(index);
                     if (keywords[index]["number"] >= 15 ){
                         keywordsFinal.push([keywords[index]["_id"], keywords[index]["number"]]);
                     }
                     callback();
                 },
                 function (err) {
-                    console.log(err);
+                    if(err) 
+                        console.log(err);
+                    // Manipulating the keywords array to join singular/plural words
+                    (function () {
+                        for (var indice = 0; indice < keywordsFinal.length; indice++) {
+                            if (keywordsFinal[indice][0].toString().match(/.+s$/g) !== null) {
+                                var singular = keywordsFinal[indice][0].toString().replace(/s$/, "");
+                                for (var i = 0; i < keywordsFinal.length; i++) {
+                                    if (keywordsFinal[i][0] === singular) {
+                                        keywordsFinal[indice][1] += keywordsFinal[i][1];
+                                        keywordsFinal.splice(i, 1);
+                                    }
+                                }
+                            }
+                        }
+                    })();
+                    
+           
+                    var doneKeywords = custom.sortArray(keywordsFinal);
+                    chart = doneKeywords.slice(0, 10);
+                    console.log(doneKeywords);
+                    console.log(chart);
+                    res.json({ 'result': doneKeywords, 'chart': chart });
                 }
-            );
-        res.json({ result: keywordsFinal });
-    });
-    
-    // Keyword.count({}, function (err, number) {
-    //     console.log('The number of keywords is ' + number);
-    //     // number = number.toString();
-    //     res.json({result: [[number, 30]]});
-    // })
+            );          
+        });
 });
 
 app.get('/toptenauthours', function (req, res) {
@@ -500,7 +516,7 @@ app.get('/toptenauthours', function (req, res) {
                     console.log(err);
                 }
             );
-        res.json({ categories: categories, 'data': data });
+        res.json({ 'categories': categories, 'data': data });
     });
     // res.json(null);
 });

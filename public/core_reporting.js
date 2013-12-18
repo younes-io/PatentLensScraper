@@ -2,20 +2,55 @@ $( document ).ready(function() {
 	$('#infoRegionInventor').hide();
 
 	$.getJSON( "/inventorspercountry", function ( data ) {
-		// console.log("US = " + data["US"]);
 		createMap(data);
 	});
 
 	$.getJSON("/keywordsgenerate", function ( data ) {
-		// alert(data["filePath"]);
 		createListForWordCloud( data.result );
-		// alert(data.result.length);
+		createTopTenKeywordsPieChart( data.chart );
 	});
 
 	$.getJSON("/toptenauthours", function ( data ) {
-		console.log(data.length);
 		createTopTenAuthoursColumnChart(data);
 	});
+
+	var createTopTenKeywordsPieChart = function ( data ) {
+		$(function () {
+		    $('#toptenkeywords').highcharts({
+		        chart: {
+		            plotBackgroundColor: null,
+		            plotBorderWidth: null,
+		            plotShadow: false
+		        },
+		        credits: {
+		        	enabled: false
+		        },
+		        title: {
+		            text: 'Classement des TOP 10 mots-clés'
+		        },
+		        tooltip: {
+		    	    pointFormat: '<b>{series.name}: {point.percentage:.1f}%</b>'
+		        },
+		        plotOptions: {
+		            pie: {
+		                allowPointSelect: true,
+		                cursor: 'pointer',
+		                dataLabels: {
+		                    enabled: true,
+		                    color: '#000000',
+		                    connectorColor: '#000000',
+		                    format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+		                }
+		            }
+		        },
+		        series: [{
+		            type: 'pie',
+		            name: '<b>Fréquance du mot-clé</b>',
+		            data: data
+		        }]
+		    });
+		});
+	}
 
 	var createTopTenAuthoursColumnChart = function ( data ) {
 		$('#toptenauthours').highcharts({
@@ -24,9 +59,9 @@ $( document ).ready(function() {
 		        margin: [ 50, 50, 100, 80]
 		    },
 		    credits: {
-		    	enabled: true,
+		    	enabled: false,
 		    	href: "https://github.com/younesherlock/PatentLensScraper",
-		    	text: "Sherlock"
+		    	text: "PatentLensScraper"
 		    },
 		    title: {
 		        text: 'Classement des TOP 10 auteurs'
