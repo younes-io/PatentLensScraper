@@ -1,6 +1,6 @@
 $( document ).ready(function() {
 	$('#infoRegionInventor').hide();
-
+	
 	$.getJSON( "/inventorspercountry", function ( data ) {
 		createMap(data);
 	});

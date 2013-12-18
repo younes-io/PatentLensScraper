@@ -455,8 +455,10 @@ app.get('/keywordsgenerate', function (req, res) {
                 indexes,
                 function (index, callback) {
                     // console.log(index);
-                    if (keywords[index]["number"] >= 15 ){
-                        keywordsFinal.push([keywords[index]["_id"], keywords[index]["number"]]);
+                    var forbidden =new Array('between','therefor','such','via','thereof','use');
+                    var ingWords = new RegExp(/.*ing$/g);
+                    if ( ( forbidden.indexOf(keywords[index]["_id"]) === -1 ) && ( ingWords.test(keywords[index]["_id"]) === false) && (keywords[index]["number"] >= 7) ){
+                        keywordsFinal.push([keywords[index]["_id"], Math.sqrt(keywords[index]["number"])*8]);
                     }
                     callback();
                 },
@@ -478,11 +480,8 @@ app.get('/keywordsgenerate', function (req, res) {
                         }
                     })();
                     
-           
                     var doneKeywords = custom.sortArray(keywordsFinal);
                     chart = doneKeywords.slice(0, 10);
-                    console.log(doneKeywords);
-                    console.log(chart);
                     res.json({ 'result': doneKeywords, 'chart': chart });
                 }
             );          
